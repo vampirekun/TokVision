@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TokVision — Términos de Servicio</title>
+  <style>
+    body {
+      background: #0d0d0d;
+      color: #f5f5f5;
+      font-family: -apple-system, Segoe UI, Roboto, sans-serif;
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 32px 24px 64px;
+      line-height: 1.6;
+    }
+    h1 { color: #3ddc97; }
+    h2 { color: #3ddc97; margin-top: 32px; }
+    a { color: #3ddc97; }
+    code { background: #1a1a1a; padding: 2px 6px; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <h1>Términos de Servicio de TokVision</h1>
+  <p><em>Última actualización: agosto de 2026</em></p>
+
+  <p>
+    TokVision es una aplicación cliente, gratuita y de código abierto, para Android TV y
+    Google TV, que permite a un usuario ver su propio perfil de TikTok y los vídeos que él
+    mismo ha publicado, iniciando sesión con su propia cuenta de TikTok mediante el
+    mecanismo oficial de autenticación (OAuth) de TikTok for Developers.
+  </p>
+
+  <h2>1. Qué hace TokVision</h2>
+  <ul>
+    <li>Permite iniciar sesión con tu cuenta de TikTok mediante el flujo oficial de TikTok Login Kit.</li>
+    <li>Muestra tu información básica de perfil (nombre, avatar, biografía) y la lista de vídeos que tú mismo has publicado, usando la Display API oficial de TikTok.</li>
+    <li>Permite reproducir vídeos y guardar favoritos/historial <strong>localmente en tu dispositivo</strong>.</li>
+  </ul>
+
+  <h2>2. Qué NO hace TokVision</h2>
+  <ul>
+    <li>No muestra un feed algorítmico de contenido de otros usuarios ("For You"/"Following"), porque TikTok no ofrece esa función a través de sus APIs públicas.</li>
+    <li>No permite buscar vídeos, usuarios o hashtags de terceros.</li>
+    <li>No permite dar like, comentar ni seguir cuentas de otros usuarios.</li>
+    <li>No usa ningún endpoint privado, no documentado o de ingeniería inversa de TikTok.</li>
+  </ul>
+
+  <h2>3. Cuenta y autenticación</h2>
+  <p>
+    Para usar TokVision necesitas tu propia cuenta de TikTok. La autenticación se realiza
+    íntegramente a través de los servidores oficiales de TikTok
+    (<code>https://www.tiktok.com/v2/auth/authorize/</code> y
+    <code>https://open.tiktokapis.com/v2/oauth/token/</code>). TokVision nunca ve ni
+    almacena tu contraseña de TikTok.
+  </p>
+
+  <h2>4. Uso aceptable</h2>
+  <p>
+    Debes usar TokVision de acuerdo con los
+    <a href="https://www.tiktok.com/legal/page/row/terms-of-service/es" target="_blank" rel="noopener">Términos de Servicio de TikTok</a>.
+    TokVision no es un producto oficial de TikTok ni está afiliado, patrocinado o
+    respaldado por TikTok Inc./ByteDance.
+  </p>
+
+  <h2>5. Sin garantías</h2>
+  <p>
+    TokVision se ofrece "tal cual", sin garantías de ningún tipo. Al depender de APIs de
+    un tercero (TikTok), su disponibilidad y funcionalidad pueden cambiar si TikTok
+    modifica o retira dichas APIs.
+  </p>
+
+  <h2>6. Contacto</h2>
+  <p>
+    Este proyecto es de código abierto. Consulta el repositorio en
+    <a href="https://github.com/vampirekun/TokVision" target="_blank" rel="noopener">github.com/vampirekun/TokVision</a>
+    para reportar problemas o dudas.
+  </p>
+
+  <p><a href="../legal/privacy.html">Ver la Política de Privacidad</a></p>
+</body>
+</html>
