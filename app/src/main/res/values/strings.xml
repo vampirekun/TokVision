@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">TokVison</string>
+    <string name="nav_home">Inicio</string>
+    <string name="nav_settings">Ajustes</string>
+    <string name="home_welcome_title">Bienvenido a TokVison</string>
+    <string name="home_welcome_subtitle">Cliente ligero de TikTok para Android TV</string>
+    <string name="home_placeholder_profile">Mi perfil (próximamente)</string>
+    <string name="home_placeholder_videos">Mis vídeos (próximamente)</string>
+    <string name="home_placeholder_link">Reproducir por enlace (próximamente)</string>
+    <string name="settings_section_playback">Reproducción</string>
+    <string name="settings_playback_quality">Calidad de vídeo</string>
+    <string name="settings_playback_autoplay">Reproducción automática</string>
+    <string name="settings_section_account">Cuenta</string>
+    <string name="settings_account_login">Iniciar sesión (próximamente)</string>
+    <string name="settings_section_storage">Almacenamiento</string>
+    <string name="settings_storage_clear_cache">Limpiar caché</string>
+    <string name="settings_section_about">Acerca de</string>
+    <string name="settings_about_version">Versión</string>
+</resources>

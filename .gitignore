@@ -1,0 +1,29 @@
+### Gradle / Android build outputs ###
+.gradle/
+build/
+app/build/
+*/build/
+.cxx/
+captures/
+out/
+
+### Local machine-specific config (never commit) ###
+local.properties
+*.iml
+.idea/
+.DS_Store
+
+### Signing (never commit real keystores/secrets) ###
+*.jks
+*.keystore
+keystore.properties
+
+### Logs / temp ###
+*.log
+build_log.txt
+lint_test_log.txt
+
+### Android Studio generated ###
+.navigation/
+captures/
+.externalNativeBuild/
