@@ -5,7 +5,7 @@
 El proyecto compila e instala perfectamente **sin** credenciales de TikTok — solo que el botón "Iniciar sesión" mostrará un error de TikTok (`invalid_client`) hasta que completes la sección 2.
 
 ```powershell
-git clone <repo-url> TokVision
+git clone https://github.com/vampirekun/TokVision.git
 cd TokVision
 .\gradlew.bat assembleDebug
 ```
@@ -26,20 +26,15 @@ Ya tienes cuenta en [developers.tiktok.com](https://developers.tiktok.com), así
 8. En la sección **Products**, añade **Login Kit**.
 9. Dentro de la configuración de Login Kit:
    - **Scopes**: activa `user.info.basic` y `video.list`.
-   - **Redirect URI**: añade exactamente la URL que publiques desde [web/oauth-callback/index.html](/c:/Users/owner/Development/TokVision/web/oauth-callback/index.html) (ver sección 3 más abajo). Debe ser `https://`, absoluta, sin parámetros ni `#`.
+   - **Redirect URI**: añade exactamente `https://vampirekun.github.io/TokVision/callback/` (publicada vía GitHub Pages desde este mismo repositorio — ver sección 3 más abajo). Debe ser `https://`, absoluta, sin parámetros ni `#`.
 10. Guarda y, cuando quieras probar login real (fuera de Sandbox), sigue el flujo de **Submit your app for review** de TikTok. Mientras tanto, el modo **Sandbox** del portal permite probar el login sin pasar la revisión completa (revisa las restricciones de Sandbox en su documentación — normalmente limita el login a los usuarios que tú añadas como testers).
 11. Copia el **Client key** y el **Client secret** de la sección **Credentials** de tu app.
 
-## 3. Publicar la página de redirect (gratis, sin backend)
+## 3. Página de redirect (ya publicada vía GitHub Pages)
 
 TikTok exige que el `redirect_uri` sea una URL `https://` real. TokVision nunca depende de que esa página *haga* nada — solo necesita existir para que TikTok la acepte al registrar la app; la lógica real ocurre dentro del WebView de la app, que intercepta la URL antes de que termine de cargar (ver [LoginScreen.kt](/c:/Users/owner/Development/TokVision/app/src/main/java/com/tokvison/app/ui/login/LoginScreen.kt)).
 
-**Opción recomendada: GitHub Pages (gratis)**
-
-1. Crea un repositorio público nuevo en GitHub, por ejemplo `tokvison-oauth`.
-2. Sube el archivo [web/oauth-callback/index.html](/c:/Users/owner/Development/TokVision/web/oauth-callback/index.html) de este proyecto a la ruta `callback/index.html` de ese repositorio.
-3. En **Settings → Pages** del repositorio, activa GitHub Pages sirviendo desde la rama `main` (carpeta raíz).
-4. Tu URL quedará como `https://<tu-usuario>.github.io/tokvison-oauth/callback/` (nota la barra final — cópiala tal cual, incluyendo o no la barra, pero usa **exactamente la misma** en TikTok y en `secrets.properties`).
+La página vive en [docs/callback/index.html](/c:/Users/owner/Development/TokVision/docs/callback/index.html) de este mismo repositorio y GitHub Pages la sirve desde la rama `main`, carpeta `/docs`. URL final: **`https://vampirekun.github.io/TokVision/callback/`**. Si alguna vez mueves el proyecto a otro repositorio/organización, solo tienes que repetir el mismo esquema (`/docs/callback/index.html` + activar Pages) y actualizar esa URL en TikTok y en `secrets.properties`.
 
 ## 4. Configurar las credenciales localmente
 
@@ -53,7 +48,7 @@ Rellena:
 ```properties
 TIKTOK_CLIENT_KEY=<tu client key>
 TIKTOK_CLIENT_SECRET=<tu client secret>
-TIKTOK_REDIRECT_URI=https://<tu-usuario>.github.io/tokvison-oauth/callback/
+TIKTOK_REDIRECT_URI=https://vampirekun.github.io/TokVision/callback/
 ```
 
 `secrets.properties` está en `.gitignore` — nunca se sube al repositorio.

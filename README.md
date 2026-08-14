@@ -17,7 +17,7 @@ TikTok **no ofrece hoy una API pública** de feed algorítmico ("For You"/"Follo
 ## Compilar
 
 ```powershell
-git clone <repo-url> TokVision
+git clone https://github.com/vampirekun/TokVision.git
 cd TokVision
 .\gradlew.bat assembleDebug
 ```
