@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Sampled from the TokVision logo's own background so the adaptive icon's
+         background layer matches seamlessly if the foreground doesn't fully cover it. -->
+    <color name="ic_launcher_background">#0A0A0E</color>
+</resources>
