@@ -9,6 +9,7 @@ out/
 
 ### Local machine-specific config (never commit) ###
 local.properties
+secrets.properties
 *.iml
 .idea/
 .DS_Store

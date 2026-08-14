@@ -2,7 +2,7 @@
 
 Cliente ligero de TikTok para **Android TV / Google TV**, optimizado para mando a distancia (D-pad), bajo consumo de RAM/CPU y arranque rápido.
 
-> **Estado actual: Fase 1 — Skeleton.** Proyecto Android nativo con Jetpack Compose for TV, tema, navegación D-pad y dos pantallas (Home, Ajustes). Sin red, sin login, sin reproducción todavía — eso llega en las fases siguientes. Ver [KNOWN_LIMITATIONS.md](/c:/Users/owner/Development/TokVision/KNOWN_LIMITATIONS.md) para el alcance real frente a las APIs oficiales de TikTok.
+> **Estado actual: Fase 2 — Autenticación (código completo).** Login/logout OAuth2+PKCE contra TikTok Login Kit, vía WebView navegable con D-pad en la propia TV. Falta el paso administrativo: registra tu app en TikTok for Developers siguiendo [BUILD.md](/c:/Users/owner/Development/TokVision/BUILD.md) y crea `secrets.properties` con tus credenciales para que el login funcione contra TikTok real. Ver [KNOWN_LIMITATIONS.md](/c:/Users/owner/Development/TokVision/KNOWN_LIMITATIONS.md) para el alcance real frente a las APIs oficiales de TikTok, y [TokVision.md](/c:/Users/owner/Development/TokVision/TokVision.md) para el contexto completo del proyecto.
 
 ## Por qué TokVison es distinto de "TikTok en el móvil pero grande"
 
@@ -22,7 +22,7 @@ cd TokVision
 .\gradlew.bat assembleDebug
 ```
 
-El APK debug queda en `app\build\outputs\apk\debug\app-debug.apk`.
+El APK debug queda en `app\build\outputs\apk\debug\app-debug.apk`. Compila y se instala perfectamente sin credenciales de TikTok — el login simplemente no funcionará contra la API real hasta que sigas [BUILD.md](/c:/Users/owner/Development/TokVision/BUILD.md) para registrar la app y crear `secrets.properties`.
 
 Para un build de release (minificado con R8, sin logs de debug):
 

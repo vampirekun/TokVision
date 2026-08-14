@@ -23,8 +23,8 @@ Es:
 |---|---|---|
 | 0 | Research (viabilidad técnica) | ✅ Completada |
 | 1 | Skeleton (proyecto Android, tema, nav D-pad, Home, Settings) | ✅ Completada |
-| 2 | Autenticación (OAuth2+PKCE vía WebView en la TV) | 🔜 Siguiente |
-| 3 | Feed de vídeo propio (Display API) + reproductor Media3 | ⬜ Pendiente |
+| 2 | Autenticación (OAuth2+PKCE vía WebView en la TV) | ✅ Código completo — pendiente que el usuario registre la app en TikTok (ver [BUILD.md](/c:/Users/owner/Development/TokVision/BUILD.md)) y pruebe login real |
+| 3 | Feed de vídeo propio (Display API) + reproductor Media3 | 🔜 Siguiente |
 | 4 | Interacciones locales (favoritos/historial) | ⬜ Pendiente |
 | 5 | Search/Discover | ❌ Omitida (no viable oficialmente, ver sección 4) |
 | 6 | Optimización (profiling RAM/CPU/startup) | ⬜ Pendiente |
@@ -147,6 +147,19 @@ También se descubrió que `androidx.tv:tv-foundation` **ya no contiene** `TvLaz
 1. Lee este documento y [KNOWN_LIMITATIONS.md](/c:/Users/owner/Development/TokVision/KNOWN_LIMITATIONS.md) completos antes de tocar código.
 2. Verifica que el entorno tenga JDK 17, y que `local.properties` apunte al Android SDK local (`sdk.dir`) — no se versiona en git.
 3. `./gradlew assembleDebug` debe compilar sin tocar nada (es el estado verificado al final de la Fase 1).
-4. La siguiente tarea pendiente es la **Fase 2 — Autenticación**: implementar OAuth2+PKCE contra TikTok Login Kit, con un `WebView` navegable por D-pad dentro de la propia TV (sin backend externo, decisión ya tomada — ver sección 3). Requiere registrar la app en developers.tiktok.com para obtener `client_key`/`client_secret` (paso administrativo del dueño del producto, no técnico).
-5. No reabras las decisiones de la sección 3 sin preguntar explícitamente al usuario.
-6. Cuando el feed/búsqueda vuelvan a surgir como tema, remite a la sección 5 de este documento en vez de re-investigar desde cero.
+4. La Fase 2 (Autenticación) ya tiene el código completo: OAuth2+PKCE contra TikTok Login Kit, con un `WebView` navegable por D-pad dentro de la propia TV (sin backend externo). Falta el paso administrativo del usuario: registrar la app en developers.tiktok.com (ver [BUILD.md](/c:/Users/owner/Development/TokVision/BUILD.md)) y crear `secrets.properties` con las credenciales reales — sin eso, el login compila pero TikTok responde `invalid_client`.
+5. La siguiente tarea pendiente es la **Fase 3 — Feed de vídeo propio + reproductor**: `core/network` (Ktor ya está en el proyecto, reutilizarlo), llamadas a `/v2/user/info/` y `/v2/video/list/` de la Display API usando `AuthRepository.ensureFreshAccessToken()`, y el wrapper de Media3 ExoPlayer.
+6. No reabras las decisiones de la sección 3 sin preguntar explícitamente al usuario.
+7. Cuando el feed/búsqueda vuelvan a surgir como tema, remite a la sección 5 de este documento en vez de re-investigar desde cero.
+
+## 8. Módulo de autenticación (Fase 2) — notas de implementación
+
+- `core/auth/PkceUtil.kt`: genera `code_verifier`/`code_challenge` (RFC 7636, S256) y el `state` anti-CSRF.
+- `core/auth/TikTokAuthConfig.kt`: URLs y scopes fijos; credenciales leídas de `BuildConfig` (a su vez generadas desde `secrets.properties`, git-ignorado — ver `secrets.properties.example`).
+- `core/auth/TikTokAuthApi.kt`: Ktor + kotlinx.serialization, solo dos llamadas (intercambio de código, refresh de token) contra `https://open.tiktokapis.com/v2/oauth/token/`.
+- `core/auth/SecureTokenStore.kt`: `EncryptedSharedPreferences` (Keystore-backed), nunca `SharedPreferences` planas.
+- `core/auth/AuthRepository.kt`: única fuente de verdad de sesión (`StateFlow<AuthState>`), orquesta PKCE + red + almacenamiento; expone `ensureFreshAccessToken()` para que las futuras llamadas a la Display API (Fase 3) obtengan un token válido sin preocuparse de refrescarlo.
+- `ui/login/LoginScreen.kt`: el login ocurre en un `WebView` normal dentro de la TV — no en Custom Tabs ni en un navegador externo — porque así se puede interceptar la navegación al `redirect_uri` (`shouldOverrideUrlLoading`) sin depender de que esa página cargue nada.
+- **Importante — por qué el redirect_uri es `https://` y no un esquema personalizado**: TikTok valida `redirect_uri` como una URL `https://` absoluta y estática; no acepta esquemas tipo `tokvison://`. Por eso existe [web/oauth-callback/index.html](/c:/Users/owner/Development/TokVision/web/oauth-callback/index.html), pensada para alojarse gratis en GitHub Pages — es solo para satisfacer esa validación, la lógica real vive en el WebView de la app.
+- `TikTokAuthConfig.isConfigured()` permite detectar si `secrets.properties` sigue con los valores de ejemplo, útil para mostrar un aviso claro en vez de un error genérico de TikTok (pendiente de conectar en la UI si se considera útil).
+- **Pendiente conocido para Fase 7 (QA)**: `PkceUtil` usa `android.util.Base64`, que no funciona en tests unitarios JVM puros sin Robolectric — al escribir tests para este módulo, usa Robolectric o inyecta un encoder abstraído.

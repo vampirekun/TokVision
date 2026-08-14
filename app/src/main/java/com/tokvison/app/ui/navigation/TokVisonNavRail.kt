@@ -1,5 +1,6 @@
 package com.tokvison.app.ui.navigation
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -15,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import androidx.tv.material3.Border
 import androidx.tv.material3.ClickableSurfaceDefaults
 import androidx.tv.material3.Icon
 import androidx.tv.material3.MaterialTheme
@@ -46,10 +48,10 @@ fun TokVisonNavRail(
     Column(
         modifier = modifier
             .fillMaxHeight()
-            .width(96.dp)
+            .width(120.dp)
             .background(MaterialTheme.colorScheme.surface)
             .padding(vertical = 24.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(20.dp),
     ) {
         items.forEach { item ->
             NavRailButton(
@@ -70,13 +72,22 @@ private fun NavRailButton(
     Surface(
         onClick = onClick,
         modifier = Modifier
-            .padding(horizontal = 12.dp)
+            .padding(horizontal = 20.dp)
             .size(72.dp),
         colors = ClickableSurfaceDefaults.colors(
-            containerColor = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
+            containerColor = if (isSelected) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.surface,
             contentColor = MaterialTheme.colorScheme.onSurface,
-            focusedContainerColor = MaterialTheme.colorScheme.primary,
+            focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
             focusedContentColor = MaterialTheme.colorScheme.onBackground,
+        ),
+        scale = ClickableSurfaceDefaults.scale(focusedScale = 1.05f),
+        border = ClickableSurfaceDefaults.border(
+            border = if (isSelected) {
+                Border(BorderStroke(2.dp, MaterialTheme.colorScheme.primary))
+            } else {
+                Border.None
+            },
+            focusedBorder = Border(BorderStroke(3.dp, MaterialTheme.colorScheme.primary)),
         ),
     ) {
         Column(

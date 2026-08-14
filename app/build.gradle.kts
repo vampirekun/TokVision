@@ -1,8 +1,22 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
+    id("org.jetbrains.kotlin.plugin.serialization")
 }
+
+// TikTok Login Kit credentials never get hardcoded/committed: they're read from a local,
+// git-ignored properties file and injected as BuildConfig fields. Placeholders keep the
+// project buildable before the developer account/app registration is complete (see BUILD.md).
+val secretsProperties = Properties().apply {
+    val secretsFile = rootProject.file("secrets.properties")
+    if (secretsFile.exists()) {
+        secretsFile.inputStream().use { load(it) }
+    }
+}
+fun secret(key: String, default: String) = secretsProperties.getProperty(key, default)
 
 android {
     namespace = "com.tokvison.app"
@@ -13,11 +27,19 @@ android {
         minSdk = 23
         targetSdk = 36
         versionCode = 1
-        versionName = "0.1.0-skeleton"
+        versionName = "0.2.0-auth"
 
         vectorDrawables {
             useSupportLibrary = true
         }
+
+        buildConfigField("String", "TIKTOK_CLIENT_KEY", "\"${secret("TIKTOK_CLIENT_KEY", "CHANGE_ME")}\"")
+        buildConfigField("String", "TIKTOK_CLIENT_SECRET", "\"${secret("TIKTOK_CLIENT_SECRET", "CHANGE_ME")}\"")
+        buildConfigField(
+            "String",
+            "TIKTOK_REDIRECT_URI",
+            "\"${secret("TIKTOK_REDIRECT_URI", "https://CHANGE-ME.github.io/tokvison-oauth/callback")}\"",
+        )
     }
 
     buildTypes {
@@ -44,6 +66,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 
     packaging {
@@ -73,6 +96,18 @@ dependencies {
     implementation("androidx.compose.ui:ui-tooling-preview")
     // Icons only (no full Material components lib): a couple of glyphs for the nav rail.
     implementation("androidx.compose.material:material-icons-core")
+
+    // Auth: OAuth2+PKCE against TikTok Login Kit. Ktor (Android/HttpURLConnection engine) +
+    // kotlinx.serialization keep this to a couple of small, coroutines-first, reflection-free
+    // libraries instead of Retrofit+Gson+RxJava.
+    implementation("io.ktor:ktor-client-core:3.5.2")
+    implementation("io.ktor:ktor-client-android:3.5.2")
+    implementation("io.ktor:ktor-client-content-negotiation:3.5.2")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:3.5.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")
+
+    // Session tokens live in EncryptedSharedPreferences (Keystore-backed), never in plain prefs.
+    implementation("androidx.security:security-crypto:1.1.0")
 
     debugImplementation("androidx.compose.ui:ui-tooling")
 

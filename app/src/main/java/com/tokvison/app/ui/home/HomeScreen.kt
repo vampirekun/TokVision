@@ -1,7 +1,9 @@
 package com.tokvison.app.ui.home
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -17,6 +19,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.tv.material3.Border
 import androidx.tv.material3.ClickableSurfaceDefaults
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Surface
@@ -58,7 +61,8 @@ fun HomeScreen(modifier: Modifier = Modifier) {
         )
 
         LazyRow(
-            horizontalArrangement = Arrangement.spacedBy(20.dp),
+            horizontalArrangement = Arrangement.spacedBy(32.dp),
+            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 12.dp),
         ) {
             itemsIndexed(cards) { index, card ->
                 val cardModifier = if (index == 0) {
@@ -86,8 +90,12 @@ private fun HomeFeatureCard(card: HomeCard, modifier: Modifier = Modifier) {
         colors = ClickableSurfaceDefaults.colors(
             containerColor = MaterialTheme.colorScheme.surface,
             contentColor = MaterialTheme.colorScheme.onSurface,
-            focusedContainerColor = MaterialTheme.colorScheme.primary,
+            focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
             focusedContentColor = MaterialTheme.colorScheme.onBackground,
+        ),
+        scale = ClickableSurfaceDefaults.scale(focusedScale = 1.06f),
+        border = ClickableSurfaceDefaults.border(
+            focusedBorder = Border(BorderStroke(3.dp, MaterialTheme.colorScheme.primary)),
         ),
     ) {
         Column(
