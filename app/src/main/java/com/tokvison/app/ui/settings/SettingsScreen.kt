@@ -129,7 +129,7 @@ private fun SettingRowItem(row: SettingRow) {
             focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
             focusedContentColor = MaterialTheme.colorScheme.onBackground,
         ),
-        scale = ClickableSurfaceDefaults.scale(focusedScale = 1.02f),
+        scale = ClickableSurfaceDefaults.scale(focusedScale = 1f),
         border = ClickableSurfaceDefaults.border(
             focusedBorder = Border(BorderStroke(2.dp, MaterialTheme.colorScheme.primary)),
         ),

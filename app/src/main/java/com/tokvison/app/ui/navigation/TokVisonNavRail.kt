@@ -80,7 +80,7 @@ private fun NavRailButton(
             focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
             focusedContentColor = MaterialTheme.colorScheme.onBackground,
         ),
-        scale = ClickableSurfaceDefaults.scale(focusedScale = 1.05f),
+        scale = ClickableSurfaceDefaults.scale(focusedScale = 1f),
         border = ClickableSurfaceDefaults.border(
             border = if (isSelected) {
                 Border(BorderStroke(2.dp, MaterialTheme.colorScheme.primary))

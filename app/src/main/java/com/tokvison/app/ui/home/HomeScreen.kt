@@ -93,7 +93,7 @@ private fun HomeFeatureCard(card: HomeCard, modifier: Modifier = Modifier) {
             focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
             focusedContentColor = MaterialTheme.colorScheme.onBackground,
         ),
-        scale = ClickableSurfaceDefaults.scale(focusedScale = 1.06f),
+        scale = ClickableSurfaceDefaults.scale(focusedScale = 1f),
         border = ClickableSurfaceDefaults.border(
             focusedBorder = Border(BorderStroke(3.dp, MaterialTheme.colorScheme.primary)),
         ),
