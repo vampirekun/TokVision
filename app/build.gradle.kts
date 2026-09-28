@@ -100,10 +100,10 @@ dependencies {
     // Auth: OAuth2+PKCE against TikTok Login Kit. Ktor (Android/HttpURLConnection engine) +
     // kotlinx.serialization keep this to a couple of small, coroutines-first, reflection-free
     // libraries instead of Retrofit+Gson+RxJava.
-    implementation("io.ktor:ktor-client-core:3.5.2")
-    implementation("io.ktor:ktor-client-android:3.5.2")
-    implementation("io.ktor:ktor-client-content-negotiation:3.5.2")
-    implementation("io.ktor:ktor-serialization-kotlinx-json:3.5.2")
+    implementation("io.ktor:ktor-client-core:3.6.0")
+    implementation("io.ktor:ktor-client-android:3.6.0")
+    implementation("io.ktor:ktor-client-content-negotiation:3.6.0")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:3.6.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")
 
     // Session tokens live in EncryptedSharedPreferences (Keystore-backed), never in plain prefs.
