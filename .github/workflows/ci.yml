@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   android:
-    name: Android debug build and unit tests
+    name: Android lint, debug build and unit tests
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -33,6 +33,9 @@ jobs:
 
       - name: Make Gradle wrapper executable
         run: chmod +x gradlew
+
+      - name: Run Android lint
+        run: ./gradlew lintDebug
 
       - name: Run unit tests
         run: ./gradlew testDebugUnitTest
