@@ -80,7 +80,7 @@ dependencies {
     val composeBom = platform("androidx.compose:compose-bom:2026.02.00")
     implementation(composeBom)
 
-    implementation("androidx.core:core-ktx:1.16.0")
+    implementation("androidx.core:core-ktx:1.19.1")
     implementation("androidx.activity:activity-compose:1.10.1")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.9.4")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.9.4")
@@ -100,10 +100,10 @@ dependencies {
     // Auth: OAuth2+PKCE against TikTok Login Kit. Ktor (Android/HttpURLConnection engine) +
     // kotlinx.serialization keep this to a couple of small, coroutines-first, reflection-free
     // libraries instead of Retrofit+Gson+RxJava.
-    implementation("io.ktor:ktor-client-core:3.5.2")
-    implementation("io.ktor:ktor-client-android:3.5.2")
-    implementation("io.ktor:ktor-client-content-negotiation:3.5.2")
-    implementation("io.ktor:ktor-serialization-kotlinx-json:3.5.2")
+    implementation("io.ktor:ktor-client-core:3.6.0")
+    implementation("io.ktor:ktor-client-android:3.6.0")
+    implementation("io.ktor:ktor-client-content-negotiation:3.6.0")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:3.6.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")
 
     // Session tokens live in EncryptedSharedPreferences (Keystore-backed), never in plain prefs.
@@ -113,5 +113,5 @@ dependencies {
 
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.7.0")
 }
