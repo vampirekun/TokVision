@@ -4,6 +4,7 @@ on:
   pull_request:
 
 permissions:
+  administration: read
   contents: read
   pull-requests: read
 
