@@ -15,9 +15,22 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
+      - name: Check dependency graph status
+        id: dependency-graph
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const { data } = await github.rest.repos.get(context.repo);
+            const status = data.security_and_analysis?.dependency_graph?.status ?? "unknown";
+            core.setOutput("enabled", String(status === "enabled"));
+
       - name: Review dependency changes
-        continue-on-error: true
+        if: steps.dependency-graph.outputs.enabled == 'true'
         uses: actions/dependency-review-action@v5
         with:
           fail-on-severity: moderate
           deny-licenses: GPL-2.0, GPL-3.0, AGPL-1.0, AGPL-3.0
+
+      - name: Skip dependency review
+        if: steps.dependency-graph.outputs.enabled != 'true'
+        run: echo "::warning::Dependency graph is disabled or unavailable; skipping dependency review."
