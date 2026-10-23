@@ -6,7 +6,7 @@ Cliente ligero de TikTok para **Android TV / Google TV**, optimizado para mando 
 
 ## Por qué TokVison es distinto de "TikTok en el móvil pero grande"
 
-TikTok **no ofrece hoy una API pública** de feed algorítmico ("For You"/"Following"), búsqueda, ni likes/comentarios/follows sobre contenido de terceros. Por eso TokVison se construye exclusivamente sobre lo que la [TikTok for Developers API](https://developers.tiktok.com) permite oficialmente: perfil propio, vídeos propios, y reproducción de enlaces. Nada de scraping ni endpoints privados. El detalle completo está en [KNOWN_LIMITATIONS.md](/c:/Users/owner/Development/TokVision/KNOWN_LIMITATIONS.md).
+TikTok **no ofrece hoy una API pública** de feed algorítmico ("For You"/"Following"), búsqueda, ni likes/comentarios/follows sobre contenido de terceros. El build actual implementa únicamente OAuth Login/Logout y almacenamiento cifrado de tokens; todavía no consulta la Display API ni obtiene perfiles o vídeos. El scope `video.list` se mantiene fuera de la autorización hasta que se implemente la función de vídeos propios. El roadmap contempla el perfil propio y los vídeos permitidos por la [TikTok for Developers API](https://developers.tiktok.com), sin scraping ni endpoints privados. El detalle del estado real está en [KNOWN_LIMITATIONS.md](KNOWN_LIMITATIONS.md).
 
 ## Requisitos
 
