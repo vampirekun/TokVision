@@ -19,7 +19,7 @@ fun secret(key: String, default: String) = secretsProperties.getProperty(key, de
 
 android {
     namespace = "com.tokvison.app"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.tokvison.app"
