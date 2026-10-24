@@ -1,0 +1,51 @@
+name: Feature request
+description: Propose a capability or improvement for TokVision.
+title: "[Feature]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        TokVision targets Android TV / Google TV and uses only documented, authorized TikTok capabilities.
+        Requests involving scraping, private endpoints, bypassing access controls, or collecting credentials will not be accepted.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or user need
+      description: What are you trying to do, and what currently makes it difficult?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: Describe the behavior you would like to see.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Other approaches or workarounds you have considered.
+    validations:
+      required: false
+  - type: dropdown
+    id: remote-navigation
+    attributes:
+      label: Remote-control / D-pad impact
+      description: How should this work from a TV remote?
+      options:
+        - All controls are reachable with the D-pad
+        - Needs a new focus or Back-navigation behavior
+        - Not applicable
+        - Not sure
+    validations:
+      required: true
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: Scope and privacy
+      options:
+        - label: This request does not depend on scraping or undocumented/private TikTok endpoints.
+          required: true
+        - label: I have not included credentials, tokens, or private account content.
+          required: true
