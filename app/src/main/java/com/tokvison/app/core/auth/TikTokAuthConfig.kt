@@ -10,10 +10,9 @@ object TikTokAuthConfig {
     const val AUTHORIZE_URL = "https://www.tiktok.com/v2/auth/authorize/"
     const val TOKEN_URL = "https://open.tiktokapis.com/v2/oauth/token/"
 
-    // user.info.basic: profile (open_id, avatar, display name). video.list: the user's own
-    // published videos. Nothing broader is requested — TokVision doesn't need more scopes
-    // for what it can legitimately show (see KNOWN_LIMITATIONS.md).
-    const val SCOPES = "user.info.basic,video.list"
+    // Request only the identity scope needed by the current OAuth/session flow.
+    // video.list is deferred until the Display API integration actually ships.
+    const val SCOPES = "user.info.basic"
 
     val clientKey: String get() = com.tokvison.app.BuildConfig.TIKTOK_CLIENT_KEY
     val clientSecret: String get() = com.tokvison.app.BuildConfig.TIKTOK_CLIENT_SECRET

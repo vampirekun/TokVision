@@ -2,6 +2,8 @@
 
 Este documento existe porque la especificación del proyecto exige explícitamente no ocultar ni simular funcionalidades que no son posibles con las APIs oficiales de TikTok. Cada fila documenta una funcionalidad de la antigua app "TikTok para TV", su estado real hoy, la razón, y la alternativa adoptada.
 
+**Estado comprobado del build actual:** OAuth Login/Logout y almacenamiento cifrado de tokens están implementados. No se llama a Display API; solo se solicita `user.info.basic`. `video.list` se añadirá cuando la consulta de vídeos propios esté implementada. La política de privacidad debe describir este estado, no funcionalidades futuras.
+
 | FEATURE | STATUS | REASON | AVAILABLE ALTERNATIVE |
 |---|---|---|---|
 | Feed "For You" (algorítmico) | ❌ No implementado | Ninguna API pública de TikTok expone un feed de recomendación de contenido de terceros. La [Display API](https://developers.tiktok.com/doc/display-api-overview) solo devuelve vídeos **del propio usuario autenticado**. | Ninguna alternativa oficial. Ver sección "Módulo no oficial" abajo. |
@@ -10,12 +12,12 @@ Este documento existe porque la especificación del proyecto exige explícitamen
 | Búsqueda de vídeos / usuarios / hashtags | ❌ No implementado | No existe endpoint de búsqueda en Login Kit, Display API ni Content Posting API. La Research API sí permite búsquedas pero está restringida a investigadores académicos aprobados por TikTok, con términos que prohíben uso productivo tipo "cliente de consumo". | Ninguna alternativa oficial |
 | Comentarios (leer/publicar) sobre contenido ajeno | ❌ No implementado | No expuesto por ninguna API pública de consumo general. | Ninguna |
 | Like / Follow sobre contenido ajeno | ❌ No implementado | No expuesto por ninguna API pública. | Ninguna |
-| Perfil propio (avatar, nombre, bio) | ✅ Planeado (Fase 3) | `GET /v2/user/info/` de la Display API, scope `user.info.basic` | — |
-| Mis vídeos (los que el usuario ha publicado) | ✅ Planeado (Fase 3) | `GET /v2/video/list/` y `/v2/video/query/`, scope `video.list` | — |
-| Login / Logout | ✅ Planeado (Fase 2) | OAuth 2.0 + PKCE (Login Kit), vía WebView navegable con D-pad directamente en la TV | — |
+| Perfil propio (avatar, nombre, bio) | ⚠️ Planeado (Fase 3; no implementado) | `GET /v2/user/info/` de la Display API; el scope `user.info.basic` se solicita en OAuth, pero este build no llama al endpoint | — |
+| Mis vídeos (los que el usuario ha publicado) | ⚠️ Planeado (Fase 3; no implementado) | `GET /v2/video/list/` y `/v2/video/query/`; el scope `video.list` se difiere hasta implementar y probar esta función | — |
+| Login / Logout | ✅ Implementado (Fase 2) | OAuth 2.0 + PKCE (Login Kit), vía WebView navegable con D-pad directamente en la TV; tokens cifrados localmente | — |
 | Compartir vídeo | ⚠️ Parcial | Share Kit de TikTok es para compartir *hacia* TikTok, no *desde* TikTok hacia otra app | Deep link a la app oficial de TikTok o al navegador |
 | Publicar vídeo propio | ⚠️ Fuera de alcance | Content Posting API existe y es técnicamente viable, pero no encaja con el propósito de un cliente de *visualización* para TV | No planeado |
-| Favoritos / Historial | ✅ Planeado (Fase 4) | 100% local (SQLDelight), no depende de ninguna API de TikTok | — |
+| Favoritos / Historial | ⚠️ Planeado (Fase 4; no implementado) | SQLDelight local previsto; no hay base de datos ni registros de favoritos/historial en el build actual | — |
 
 ## Sobre el "módulo no oficial"
 

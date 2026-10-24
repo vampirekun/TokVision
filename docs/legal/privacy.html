@@ -25,7 +25,7 @@
 </head>
 <body>
   <h1>Política de Privacidad de TokVision</h1>
-  <p><em>Última actualización: agosto de 2026</em></p>
+  <p><em>Última actualización: 23 de octubre de 2026</em></p>
 
   <p>
     TokVision es una aplicación cliente para Android TV / Google TV que se conecta a tu
@@ -34,19 +34,21 @@
     dónde se almacenan y con quién se comparten.
   </p>
 
-  <h2>1. Qué datos accede TokVision</h2>
+  <h2>1. Qué datos procesa la versión actual</h2>
   <table>
-    <tr><th>Dato</th><th>Origen</th><th>Uso</th></tr>
-    <tr><td>open_id, nombre, avatar, biografía</td><td>TikTok Display API (<code>/v2/user/info/</code>)</td><td>Mostrar tu perfil dentro de la app</td></tr>
-    <tr><td>Lista de tus propios vídeos publicados</td><td>TikTok Display API (<code>/v2/video/list/</code>, <code>/v2/video/query/</code>)</td><td>Mostrar y reproducir tus vídeos</td></tr>
-    <tr><td>access_token / refresh_token</td><td>TikTok Login Kit (OAuth)</td><td>Mantener tu sesión iniciada</td></tr>
-    <tr><td>Favoritos e historial de reproducción</td><td>Generado localmente por tu uso de la app</td><td>Recordar qué vídeos marcaste o viste</td></tr>
+    <tr><th>Dato</th><th>Origen</th><th>Uso en la versión actual</th></tr>
+    <tr><td><code>open_id</code></td><td>Respuesta OAuth de TikTok Login Kit</td><td>Identificar la cuenta conectada; no se consulta el perfil.</td></tr>
+    <tr><td><code>access_token</code>, <code>refresh_token</code> y expiración</td><td>Endpoint OAuth de TikTok Login Kit</td><td>Mantener y renovar la sesión.</td></tr>
+    <tr><td><code>state</code> y <code>code_verifier</code> de PKCE</td><td>Generados para cada intento de inicio de sesión</td><td>Validar el retorno OAuth; se mantienen en memoria y se descartan al completar o cancelar el flujo.</td></tr>
+    <tr><td>Nombre, avatar, biografía y vídeos propios</td><td>No se obtienen en la versión actual; los endpoints Display API aún no están implementados.</td><td>No se muestran ni almacenan. El scope <code>video.list</code> no se solicita.</td></tr>
+    <tr><td>Favoritos e historial de reproducción</td><td>Funcionalidad aún no implementada</td><td>No se almacenan; no existe todavía una base de datos local para ellos.</td></tr>
   </table>
 
   <p>
-    TokVision <strong>no solicita ni accede</strong> a tu lista de seguidores/seguidos,
-    mensajes privados, ni contenido de otros usuarios de TikTok — esos datos no están
-    disponibles a través de las APIs oficiales que usa la aplicación.
+    La versión actual solicita únicamente el scope <code>user.info.basic</code> para el flujo de identidad OAuth.
+    No llama a <code>/v2/user/info/</code>, <code>/v2/video/list/</code> ni <code>/v2/video/query/</code>;
+    el scope <code>video.list</code> se añadirá solo cuando la función de vídeos propios esté implementada.
+    TokVision tampoco solicita seguidores/seguidos, mensajes privados ni contenido de otros usuarios.
   </p>
 
   <h2>2. Dónde se almacenan tus datos</h2>
@@ -54,28 +56,26 @@
     Todo se almacena <strong>únicamente en tu propio dispositivo Android TV</strong>:
   </p>
   <ul>
-    <li>Los tokens de sesión (access/refresh token) se guardan cifrados mediante <code>EncryptedSharedPreferences</code>, respaldados por el Android Keystore del dispositivo (cifrado AES-256).</li>
-    <li>Los favoritos, el historial y los ajustes se guardan en una base de datos local del dispositivo.</li>
-    <li>TokVision no tiene servidor propio ni backend: no existe ninguna base de datos remota controlada por los desarrolladores de TokVision donde se almacenen tus datos o tokens.</li>
+    <li><code>open_id</code>, los tokens de sesión y su expiración se guardan cifrados mediante <code>EncryptedSharedPreferences</code>, respaldados por Android Keystore.</li>
+    <li>El estado PKCE (<code>state</code> y <code>code_verifier</code>) solo vive en memoria durante el intento de login; no se persiste.</li>
+    <li>Los favoritos e historial aún no existen como funciones y no se guardan. Los valores de calidad/reproducción que aparecen en Ajustes son placeholders, no preferencias persistidas.</li>
+    <li>TokVision no tiene servidor propio ni backend; no existe una base de datos remota controlada por sus desarrolladores.</li>
   </ul>
 
   <h2>3. Con quién se comparten tus datos</h2>
   <p>
-    TokVision solo se comunica directamente con los servidores oficiales de TikTok
-    (<code>tiktok.com</code> y <code>open.tiktokapis.com</code>) para autenticarte y
-    obtener tu perfil/vídeos. TokVision no envía tus datos a ningún otro tercero, no
-    incluye publicidad ni analítica de terceros, y no vende ni comparte tus datos con
-    fines comerciales.
+    El cliente HTTP de TokVision usa el endpoint OAuth de <code>open.tiktokapis.com</code> para intercambiar o renovar tokens.
+    El WebView abre la página oficial de autorización de <code>tiktok.com</code>, que puede cargar los recursos propios de TikTok.
+    La versión actual no llama a la Display API ni obtiene perfiles o vídeos. TokVision no incluye publicidad ni analítica de terceros,
+    no tiene backend propio y no vende ni comparte tus datos con fines comerciales.
   </p>
 
   <h2>4. Cómo eliminar tus datos</h2>
   <p>
-    Puedes cerrar sesión desde <strong>Ajustes → Cuenta → Cerrar sesión</strong> dentro de
-    la app en cualquier momento, lo que elimina inmediatamente los tokens almacenados en
-    el dispositivo. Desinstalar la aplicación elimina también el historial y los
-    favoritos locales. Para revocar el acceso de TokVision a tu cuenta de TikTok desde el
-    lado de TikTok, ve a la configuración de tu cuenta de TikTok → Seguridad y privacidad
-    → Aplicaciones y sitios web conectados.
+    Puedes cerrar sesión desde <strong>Ajustes → Cuenta → Cerrar sesión</strong>; esto elimina los tokens y el <code>open_id</code> guardados localmente.
+    El cierre de sesión no revoca por sí solo el permiso en los servidores de TikTok. Para revocarlo, abre la configuración de tu cuenta de TikTok
+    → Seguridad y privacidad → Aplicaciones y sitios web conectados. Desinstalar TokVision elimina los datos locales de la aplicación.
+    Como favoritos e historial aún no están implementados, esta versión no tiene esos registros que borrar.
   </p>
 
   <h2>5. Menores de edad</h2>
