@@ -1,0 +1,56 @@
+name: Bug report
+description: Report a reproducible problem in TokVision.
+title: "[Bug]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before submitting, search existing issues and include only information needed to reproduce the problem.
+        Never paste TikTok passwords, OAuth codes, access/refresh tokens, client secrets, or private account content.
+  - type: input
+    id: app-version
+    attributes:
+      label: TokVision version or commit
+      description: Use the app version, release tag, or commit SHA if known.
+      placeholder: "e.g. 0.1.0 or bb94027"
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: Android TV / Google TV device
+      description: Include the device model and Android version.
+      placeholder: "e.g. Chromecast with Google TV, Android 12"
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: List the actions in order, including the remote-control buttons used.
+      placeholder: |
+        1. Open...
+        2. Press...
+        3. Observe...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs or screenshots
+      description: Redact tokens, account identifiers, personal content, and other sensitive data before sharing.
+      render: text
+    validations:
+      required: false
