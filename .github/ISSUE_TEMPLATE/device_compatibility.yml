@@ -1,0 +1,66 @@
+name: Device compatibility report
+description: Report TokVision behavior on a specific Android TV / Google TV device.
+title: "[Device compatibility]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form to record compatibility observations, not to share account details.
+        Never include TikTok credentials, OAuth codes, access/refresh tokens, or private account content.
+  - type: input
+    id: app-version
+    attributes:
+      label: TokVision version or commit
+      placeholder: "e.g. release tag or commit SHA"
+    validations:
+      required: true
+  - type: input
+    id: device-model
+    attributes:
+      label: Device model
+      description: Include the retail model name; omit serial numbers and device identifiers.
+      placeholder: "e.g. Chromecast with Google TV"
+    validations:
+      required: true
+  - type: input
+    id: android-version
+    attributes:
+      label: Android / Google TV version
+      placeholder: "e.g. Android TV 12"
+    validations:
+      required: true
+  - type: input
+    id: display-resolution
+    attributes:
+      label: Display resolution (if known)
+      placeholder: "e.g. 1920x1080 or 3840x2160"
+    validations:
+      required: false
+  - type: dropdown
+    id: result
+    attributes:
+      label: Overall result
+      options:
+        - Works as expected
+        - Works with limitations
+        - Does not work
+        - Unable to complete testing
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Tested areas
+      options:
+        - label: App launches and renders correctly
+        - label: D-pad focus and selection work
+        - label: Back navigation behaves correctly
+        - label: Login screen behavior tested (no credentials included)
+        - label: Video/link playback behavior tested
+  - type: textarea
+    id: details
+    attributes:
+      label: Observations and reproduction steps
+      description: Note what worked, what failed, and any relevant steps. Redact logs before attaching them.
+    validations:
+      required: true
