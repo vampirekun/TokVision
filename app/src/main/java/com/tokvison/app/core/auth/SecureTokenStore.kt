@@ -17,7 +17,13 @@ data class TikTokSession(
  * [EncryptedSharedPreferences] (AES-256, Keystore-backed master key), never in plain
  * `SharedPreferences`, never logged, never included in crash reports.
  */
-class SecureTokenStore(context: Context) {
+interface TokenStore {
+    fun save(session: TikTokSession)
+    fun load(): TikTokSession?
+    fun clear()
+}
+
+class SecureTokenStore(context: Context) : TokenStore {
     private val masterKey = MasterKey.Builder(context)
         .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
         .build()
@@ -30,7 +36,7 @@ class SecureTokenStore(context: Context) {
         EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM,
     )
 
-    fun save(session: TikTokSession) {
+    override fun save(session: TikTokSession) {
         prefs.edit()
             .putString(KEY_OPEN_ID, session.openId)
             .putString(KEY_ACCESS_TOKEN, session.accessToken)
@@ -39,7 +45,7 @@ class SecureTokenStore(context: Context) {
             .apply()
     }
 
-    fun load(): TikTokSession? {
+    override fun load(): TikTokSession? {
         val openId = prefs.getString(KEY_OPEN_ID, null) ?: return null
         val accessToken = prefs.getString(KEY_ACCESS_TOKEN, null) ?: return null
         val refreshToken = prefs.getString(KEY_REFRESH_TOKEN, null) ?: return null
@@ -47,7 +53,7 @@ class SecureTokenStore(context: Context) {
         return TikTokSession(openId, accessToken, refreshToken, expiresAt)
     }
 
-    fun clear() {
+    override fun clear() {
         prefs.edit().clear().apply()
     }
 
