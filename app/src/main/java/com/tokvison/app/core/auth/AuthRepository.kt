@@ -1,6 +1,7 @@
 package com.tokvison.app.core.auth
 
 import android.content.Context
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -113,6 +114,9 @@ class AuthRepository internal constructor(
                 return null
             }
             if (applyTokenResponse(response).isSuccess) tokenStore.load()?.accessToken else null
+        } catch (cancelled: CancellationException) {
+            // Preserve structured concurrency: cancellation is not a recoverable transport failure.
+            throw cancelled
         } catch (t: Throwable) {
             // Network/transport failures are transient: retain the encrypted session for retry.
             null
