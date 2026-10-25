@@ -106,10 +106,10 @@ class AuthRepository internal constructor(
         return try {
             val response = api.refreshAccessToken(session.refreshToken)
             if (response.error?.equals("invalid_grant", ignoreCase = true) == true) {
-                // The refresh credential has been rejected; keeping it would cause every
-                // subsequent authenticated request to retry a permanently invalid session.
-                tokenStore.clear()
+                // Stop treating the user as authenticated even if secure-storage cleanup fails.
+                // The rejected refresh token must not leave the in-memory auth state as LoggedIn.
                 _state.value = AuthState.LoggedOut
+                tokenStore.clear()
                 return null
             }
             if (applyTokenResponse(response).isSuccess) tokenStore.load()?.accessToken else null
