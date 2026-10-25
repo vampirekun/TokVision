@@ -30,6 +30,25 @@ class AuthRepositoryRefreshTest {
     }
 
     @Test
+    fun invalidGrantLogsOutInMemoryWhenSecureStoreClearFails() = runBlocking {
+        val store = FakeTokenStore(expiredSession(), failClear = true)
+        val repository = AuthRepository(
+            api = FakeTikTokAuthClient {
+                TikTokTokenResponse(
+                    error = "invalid_grant",
+                    errorDescription = "Refresh token expired",
+                )
+            },
+            tokenStore = store,
+        )
+
+        assertNull(repository.ensureFreshAccessToken())
+        assertEquals(AuthState.LoggedOut, repository.state.value)
+        // The fake store intentionally retains the session because its clear operation failed.
+        assertTrue(store.load() != null)
+    }
+
+    @Test
     fun transportFailureKeepsStoredSessionForRetry() = runBlocking {
         val session = expiredSession()
         val store = FakeTokenStore(session)
@@ -72,7 +91,10 @@ class AuthRepositoryRefreshTest {
         accessTokenExpiresAtMillis = 0L,
     )
 
-    private class FakeTokenStore(initialSession: TikTokSession?) : TokenStore {
+    private class FakeTokenStore(
+        initialSession: TikTokSession?,
+        private val failClear: Boolean = false,
+    ) : TokenStore {
         private var session = initialSession
 
         override fun save(session: TikTokSession) {
@@ -82,6 +104,7 @@ class AuthRepositoryRefreshTest {
         override fun load(): TikTokSession? = session
 
         override fun clear() {
+            if (failClear) throw IllegalStateException("secure storage unavailable")
             session = null
         }
     }
