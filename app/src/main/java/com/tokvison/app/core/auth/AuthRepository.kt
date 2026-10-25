@@ -24,11 +24,11 @@ data class PendingLogin(
  * exchange/refresh calls, and secure persistence — nothing else in the app touches tokens
  * directly.
  */
-class AuthRepository(
-    context: Context,
-    private val api: TikTokAuthApi = TikTokAuthApi(),
-    private val tokenStore: SecureTokenStore = SecureTokenStore(context),
+class AuthRepository internal constructor(
+    private val api: TikTokAuthClient,
+    private val tokenStore: TokenStore,
 ) {
+    constructor(context: Context) : this(TikTokAuthApi(), SecureTokenStore(context))
     private val _state = MutableStateFlow<AuthState>(AuthState.LoggedOut)
     val state: StateFlow<AuthState> = _state.asStateFlow()
 
@@ -105,8 +105,16 @@ class AuthRepository(
         }
         return try {
             val response = api.refreshAccessToken(session.refreshToken)
+            if (response.error?.equals("invalid_grant", ignoreCase = true) == true) {
+                // The refresh credential has been rejected; keeping it would cause every
+                // subsequent authenticated request to retry a permanently invalid session.
+                tokenStore.clear()
+                _state.value = AuthState.LoggedOut
+                return null
+            }
             if (applyTokenResponse(response).isSuccess) tokenStore.load()?.accessToken else null
         } catch (t: Throwable) {
+            // Network/transport failures are transient: retain the encrypted session for retry.
             null
         }
     }
