@@ -1,5 +1,6 @@
 package com.tokvison.app.core.auth
 
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -58,6 +59,26 @@ class AuthRepositoryRefreshTest {
         )
 
         assertNull(repository.ensureFreshAccessToken())
+        assertEquals(session, store.load())
+        assertTrue(repository.state.value is AuthState.LoggedIn)
+    }
+
+    @Test
+    fun cancellationPropagatesAndKeepsStoredSession() = runBlocking {
+        val session = expiredSession()
+        val store = FakeTokenStore(session)
+        val repository = AuthRepository(
+            api = FakeTikTokAuthClient { throw CancellationException("refresh cancelled") },
+            tokenStore = store,
+        )
+
+        try {
+            repository.ensureFreshAccessToken()
+            throw AssertionError("Expected refresh cancellation to propagate")
+        } catch (expected: CancellationException) {
+            assertEquals("refresh cancelled", expected.message)
+        }
+
         assertEquals(session, store.load())
         assertTrue(repository.state.value is AuthState.LoggedIn)
     }
