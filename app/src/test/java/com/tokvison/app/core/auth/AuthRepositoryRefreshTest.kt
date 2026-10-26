@@ -60,6 +60,82 @@ class AuthRepositoryRefreshTest {
     }
 
     @Test
+    fun invalidationClearsEncryptedSessionWhenFirstMarkerWriteFails() {
+        var markerAttempts = 0
+        var clearAttempts = 0
+        var sessionPresent = true
+
+        invalidateStoredSession(
+            writeInvalidationMarker = {
+                markerAttempts++
+                false
+            },
+            clearEncryptedSession = {
+                clearAttempts++
+                sessionPresent = false
+                true
+            },
+        )
+
+        assertTrue(!sessionPresent)
+        assertEquals(1, markerAttempts)
+        assertEquals(1, clearAttempts)
+    }
+
+    @Test
+    fun invalidationRetriesMarkerAndCleanupWhenBothFirstAttemptsFail() {
+        var markerAttempts = 0
+        var clearAttempts = 0
+        var sessionPresent = true
+
+        invalidateStoredSession(
+            writeInvalidationMarker = {
+                markerAttempts++
+                markerAttempts >= 2
+            },
+            clearEncryptedSession = {
+                clearAttempts++
+                if (clearAttempts >= 2) {
+                    sessionPresent = false
+                    true
+                } else {
+                    false
+                }
+            },
+        )
+
+        assertTrue(!sessionPresent)
+        assertEquals(2, markerAttempts)
+        assertEquals(2, clearAttempts)
+    }
+
+    @Test
+    fun invalidationReportsFailureWhenMarkerAndCleanupBothFailTwice() {
+        var markerAttempts = 0
+        var clearAttempts = 0
+        var failed = false
+
+        try {
+            invalidateStoredSession(
+                writeInvalidationMarker = {
+                    markerAttempts++
+                    false
+                },
+                clearEncryptedSession = {
+                    clearAttempts++
+                    false
+                },
+            )
+        } catch (expected: IllegalStateException) {
+            failed = true
+        }
+
+        assertTrue(failed)
+        assertEquals(2, markerAttempts)
+        assertEquals(2, clearAttempts)
+    }
+
+    @Test
     fun transportFailureKeepsStoredSessionForRetry() = runBlocking {
         val session = expiredSession()
         val store = FakeTokenStore(session)
