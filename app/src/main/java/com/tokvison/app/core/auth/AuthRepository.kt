@@ -107,10 +107,10 @@ class AuthRepository internal constructor(
         return try {
             val response = api.refreshAccessToken(session.refreshToken)
             if (response.error?.equals("invalid_grant", ignoreCase = true) == true) {
-                // Stop treating the user as authenticated even if secure-storage cleanup fails.
-                // The rejected refresh token must not leave the in-memory auth state as LoggedIn.
+                // Invalidate before attempting encrypted-store cleanup. The non-secret
+                // tombstone prevents a rejected session from being restored after restart.
                 _state.value = AuthState.LoggedOut
-                tokenStore.clear()
+                tokenStore.invalidate()
                 return null
             }
             if (applyTokenResponse(response).isSuccess) tokenStore.load()?.accessToken else null
@@ -124,8 +124,8 @@ class AuthRepository internal constructor(
     }
 
     suspend fun logout() {
-        tokenStore.clear()
         _state.value = AuthState.LoggedOut
+        tokenStore.invalidate()
     }
 
     private fun applyTokenResponse(response: TikTokTokenResponse): Result<Unit> {
