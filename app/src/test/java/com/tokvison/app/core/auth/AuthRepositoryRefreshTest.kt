@@ -31,7 +31,7 @@ class AuthRepositoryRefreshTest {
     }
 
     @Test
-    fun invalidGrantLogsOutInMemoryWhenSecureStoreClearFails() = runBlocking {
+    fun invalidGrantDoesNotRestoreRejectedSessionAfterSecureCleanupFails() = runBlocking {
         val store = FakeTokenStore(expiredSession(), failClear = true)
         val repository = AuthRepository(
             api = FakeTikTokAuthClient {
@@ -45,8 +45,18 @@ class AuthRepositoryRefreshTest {
 
         assertNull(repository.ensureFreshAccessToken())
         assertEquals(AuthState.LoggedOut, repository.state.value)
-        // The fake store intentionally retains the session because its clear operation failed.
-        assertTrue(store.load() != null)
+
+        // The encrypted record remains in this fake, but its persisted invalidation marker
+        // makes it unavailable to a newly constructed repository.
+        assertTrue(store.rawSessionForTest() != null)
+        assertTrue(store.isInvalidatedForTest())
+        assertNull(store.load())
+
+        val restoredRepository = AuthRepository(
+            api = FakeTikTokAuthClient { throw IOException("Must not refresh an invalidated session") },
+            tokenStore = store,
+        )
+        assertEquals(AuthState.LoggedOut, restoredRepository.state.value)
     }
 
     @Test
@@ -117,17 +127,27 @@ class AuthRepositoryRefreshTest {
         private val failClear: Boolean = false,
     ) : TokenStore {
         private var session = initialSession
+        private var invalidated = false
 
         override fun save(session: TikTokSession) {
             this.session = session
+            invalidated = false
         }
 
-        override fun load(): TikTokSession? = session
+        override fun load(): TikTokSession? = if (invalidated) null else session
 
-        override fun clear() {
+        override fun clear() = invalidate()
+
+        override fun invalidate() {
+            // Model the durable tombstone being written before encrypted cleanup fails.
+            invalidated = true
             if (failClear) throw IllegalStateException("secure storage unavailable")
             session = null
         }
+
+        fun rawSessionForTest(): TikTokSession? = session
+
+        fun isInvalidatedForTest(): Boolean = invalidated
     }
 
     private class FakeTikTokAuthClient(
