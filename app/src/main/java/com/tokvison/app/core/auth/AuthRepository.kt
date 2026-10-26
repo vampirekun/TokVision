@@ -1,6 +1,7 @@
 package com.tokvison.app.core.auth
 
 import android.content.Context
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -24,11 +25,11 @@ data class PendingLogin(
  * exchange/refresh calls, and secure persistence — nothing else in the app touches tokens
  * directly.
  */
-class AuthRepository(
-    context: Context,
-    private val api: TikTokAuthApi = TikTokAuthApi(),
-    private val tokenStore: SecureTokenStore = SecureTokenStore(context),
+class AuthRepository internal constructor(
+    private val api: TikTokAuthClient,
+    private val tokenStore: TokenStore,
 ) {
+    constructor(context: Context) : this(TikTokAuthApi(), SecureTokenStore(context))
     private val _state = MutableStateFlow<AuthState>(AuthState.LoggedOut)
     val state: StateFlow<AuthState> = _state.asStateFlow()
 
@@ -105,15 +106,29 @@ class AuthRepository(
         }
         return try {
             val response = api.refreshAccessToken(session.refreshToken)
+            if (response.error?.equals("invalid_grant", ignoreCase = true) == true) {
+                // Invalidate before attempting encrypted-store cleanup. The non-secret
+                // tombstone prevents a rejected session from being restored after restart.
+                _state.value = AuthState.LoggedOut
+                tokenStore.invalidate()
+                return null
+            }
             if (applyTokenResponse(response).isSuccess) tokenStore.load()?.accessToken else null
+        } catch (cancelled: CancellationException) {
+            // Preserve structured concurrency: cancellation is not a recoverable transport failure.
+            throw cancelled
+        } catch (invalidationFailure: SessionInvalidationException) {
+            // Do not hide an unrecoverable storage failure behind a normal "logged out" result.
+            throw invalidationFailure
         } catch (t: Throwable) {
+            // Network/transport failures are transient: retain the encrypted session for retry.
             null
         }
     }
 
     suspend fun logout() {
-        tokenStore.clear()
         _state.value = AuthState.LoggedOut
+        tokenStore.invalidate()
     }
 
     private fun applyTokenResponse(response: TikTokTokenResponse): Result<Unit> {

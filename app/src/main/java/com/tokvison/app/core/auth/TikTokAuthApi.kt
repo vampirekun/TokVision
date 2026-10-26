@@ -12,10 +12,15 @@ import kotlinx.serialization.json.Json
 /** Thin wrapper around the two Login Kit token endpoints. No feed/search calls live here —
  * those don't exist officially (see KNOWN_LIMITATIONS.md). This only ever talks to
  * open.tiktokapis.com's OAuth token endpoint. */
+interface TikTokAuthClient {
+    suspend fun exchangeCodeForToken(code: String, codeVerifier: String): TikTokTokenResponse
+    suspend fun refreshAccessToken(refreshToken: String): TikTokTokenResponse
+}
+
 class TikTokAuthApi(
     private val httpClient: HttpClient = defaultClient(),
-) {
-    suspend fun exchangeCodeForToken(code: String, codeVerifier: String): TikTokTokenResponse {
+) : TikTokAuthClient {
+    override suspend fun exchangeCodeForToken(code: String, codeVerifier: String): TikTokTokenResponse {
         val response = httpClient.submitForm(
             url = TikTokAuthConfig.TOKEN_URL,
             formParameters = Parameters.build {
@@ -30,7 +35,7 @@ class TikTokAuthApi(
         return json.decodeFromString(TikTokTokenResponse.serializer(), response.bodyAsText())
     }
 
-    suspend fun refreshAccessToken(refreshToken: String): TikTokTokenResponse {
+    override suspend fun refreshAccessToken(refreshToken: String): TikTokTokenResponse {
         val response = httpClient.submitForm(
             url = TikTokAuthConfig.TOKEN_URL,
             formParameters = Parameters.build {
