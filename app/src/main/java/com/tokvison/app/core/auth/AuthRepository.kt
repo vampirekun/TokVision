@@ -117,6 +117,9 @@ class AuthRepository internal constructor(
         } catch (cancelled: CancellationException) {
             // Preserve structured concurrency: cancellation is not a recoverable transport failure.
             throw cancelled
+        } catch (invalidationFailure: SessionInvalidationException) {
+            // Do not hide an unrecoverable storage failure behind a normal "logged out" result.
+            throw invalidationFailure
         } catch (t: Throwable) {
             // Network/transport failures are transient: retain the encrypted session for retry.
             null
