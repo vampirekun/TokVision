@@ -43,7 +43,13 @@ class AuthRepositoryRefreshTest {
             tokenStore = store,
         )
 
-        assertNull(repository.ensureFreshAccessToken())
+        var invalidationFailed = false
+        try {
+            repository.ensureFreshAccessToken()
+        } catch (expected: SessionInvalidationException) {
+            invalidationFailed = true
+        }
+        assertTrue(invalidationFailed)
         assertEquals(AuthState.LoggedOut, repository.state.value)
 
         // The encrypted record remains in this fake, but its persisted invalidation marker
@@ -126,7 +132,7 @@ class AuthRepositoryRefreshTest {
                     false
                 },
             )
-        } catch (expected: IllegalStateException) {
+        } catch (expected: SessionInvalidationException) {
             failed = true
         }
 
@@ -217,7 +223,7 @@ class AuthRepositoryRefreshTest {
         override fun invalidate() {
             // Model the durable tombstone being written before encrypted cleanup fails.
             invalidated = true
-            if (failClear) throw IllegalStateException("secure storage unavailable")
+            if (failClear) throw SessionInvalidationException("secure storage unavailable")
             session = null
         }
 
