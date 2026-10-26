@@ -18,5 +18,12 @@ data class TikTokTokenResponse(
     @SerialName("error_description") val errorDescription: String? = null,
     @SerialName("log_id") val logId: String? = null,
 ) {
-    val isSuccess: Boolean get() = error == null && accessToken != null
+    val isSuccess: Boolean
+        get() = error == null &&
+            !openId.isNullOrBlank() &&
+            !accessToken.isNullOrBlank() &&
+            !refreshToken.isNullOrBlank() &&
+            (expiresInSeconds ?: 0L) > 0L &&
+            (refreshExpiresInSeconds ?: 0L) > 0L &&
+            tokenType?.equals("Bearer", ignoreCase = true) == true
 }

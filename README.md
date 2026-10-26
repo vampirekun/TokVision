@@ -2,11 +2,11 @@
 
 Cliente ligero de TikTok para **Android TV / Google TV**, optimizado para mando a distancia (D-pad), bajo consumo de RAM/CPU y arranque rápido.
 
-> **Estado actual: Fase 2 — Autenticación (código completo).** Login/logout OAuth2+PKCE contra TikTok Login Kit, vía WebView navegable con D-pad en la propia TV. Falta el paso administrativo: registra tu app en TikTok for Developers siguiendo [BUILD.md](/c:/Users/owner/Development/TokVision/BUILD.md) y crea `secrets.properties` con tus credenciales para que el login funcione contra TikTok real. Ver [KNOWN_LIMITATIONS.md](/c:/Users/owner/Development/TokVision/KNOWN_LIMITATIONS.md) para el alcance real frente a las APIs oficiales de TikTok, y [TokVision.md](/c:/Users/owner/Development/TokVision/TokVision.md) para el contexto completo del proyecto.
+> **Estado actual: Fase 2 — Autenticación (código completo).** Login/logout OAuth2+PKCE contra TikTok Login Kit, vía WebView navegable con D-pad en la propia TV. Falta el paso administrativo: registra tu app en TikTok for Developers siguiendo [BUILD.md](BUILD.md) y crea `secrets.properties` con tus credenciales para que el login funcione contra TikTok real. Ver [KNOWN_LIMITATIONS.md](KNOWN_LIMITATIONS.md) para el alcance real frente a las APIs oficiales de TikTok, y [TokVision.md](TokVision.md) para el contexto completo del proyecto.
 
 ## Por qué TokVison es distinto de "TikTok en el móvil pero grande"
 
-TikTok **no ofrece hoy una API pública** de feed algorítmico ("For You"/"Following"), búsqueda, ni likes/comentarios/follows sobre contenido de terceros. Por eso TokVison se construye exclusivamente sobre lo que la [TikTok for Developers API](https://developers.tiktok.com) permite oficialmente: perfil propio, vídeos propios, y reproducción de enlaces. Nada de scraping ni endpoints privados. El detalle completo está en [KNOWN_LIMITATIONS.md](/c:/Users/owner/Development/TokVision/KNOWN_LIMITATIONS.md).
+TikTok **no ofrece hoy una API pública** de feed algorítmico ("For You"/"Following"), búsqueda, ni likes/comentarios/follows sobre contenido de terceros. El build actual implementa únicamente OAuth Login/Logout y almacenamiento cifrado de tokens; todavía no consulta la Display API ni obtiene perfiles o vídeos. El scope `video.list` se mantiene fuera de la autorización hasta que se implemente la función de vídeos propios. El roadmap contempla el perfil propio y los vídeos permitidos por la [TikTok for Developers API](https://developers.tiktok.com), sin scraping ni endpoints privados. El detalle del estado real está en [KNOWN_LIMITATIONS.md](KNOWN_LIMITATIONS.md).
 
 ## Requisitos
 
@@ -22,7 +22,7 @@ cd TokVision
 .\gradlew.bat assembleDebug
 ```
 
-El APK debug queda en `app\build\outputs\apk\debug\app-debug.apk`. Compila y se instala perfectamente sin credenciales de TikTok — el login simplemente no funcionará contra la API real hasta que sigas [BUILD.md](/c:/Users/owner/Development/TokVision/BUILD.md) para registrar la app y crear `secrets.properties`.
+El APK debug queda en `app\build\outputs\apk\debug\app-debug.apk`. Compila y se instala perfectamente sin credenciales de TikTok — el login simplemente no funcionará contra la API real hasta que sigas [BUILD.md](BUILD.md) para registrar la app y crear `secrets.properties`.
 
 Para un build de release (minificado con R8, sin logs de debug):
 
