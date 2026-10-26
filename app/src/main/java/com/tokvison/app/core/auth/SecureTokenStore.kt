@@ -12,6 +12,8 @@ data class TikTokSession(
     val accessTokenExpiresAtMillis: Long,
 )
 
+internal class SessionInvalidationException(message: String) : IllegalStateException(message)
+
 /**
  * Tokens are the most sensitive thing this app stores — they live in
  * EncryptedSharedPreferences (AES-256, Keystore-backed master key), never in plain
@@ -44,17 +46,17 @@ internal fun invalidateStoredSession(
     if (markerWritten) {
         val clearedOnRetry = runCatching { clearEncryptedSession() }.getOrDefault(false)
         if (clearedOnRetry) return
-        throw IllegalStateException("Unable to clear encrypted session; invalidation marker remains set.")
+        throw SessionInvalidationException("Unable to clear encrypted session; invalidation marker remains set.")
     }
 
     val markerWrittenOnRetry = runCatching { writeInvalidationMarker() }.getOrDefault(false)
     val clearedOnRetry = runCatching { clearEncryptedSession() }.getOrDefault(false)
     if (clearedOnRetry) return
     if (markerWrittenOnRetry) {
-        throw IllegalStateException("Unable to clear encrypted session; invalidation marker remains set.")
+        throw SessionInvalidationException("Unable to clear encrypted session; invalidation marker remains set.")
     }
 
-    throw IllegalStateException("Unable to invalidate session: marker persistence and encrypted cleanup failed twice.")
+    throw SessionInvalidationException("Unable to invalidate session: marker persistence and encrypted cleanup failed twice.")
 }
 
 class SecureTokenStore(context: Context) : TokenStore {
