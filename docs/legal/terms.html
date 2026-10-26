@@ -22,7 +22,7 @@
 </head>
 <body>
   <h1>Términos de Servicio de TokVision</h1>
-  <p><em>Última actualización: agosto de 2026</em></p>
+  <p><em>Última actualización: 26 de octubre de 2026</em></p>
 
   <p>
     TokVision es una aplicación cliente, gratuita y de código abierto, para Android TV y
@@ -31,12 +31,17 @@
     mecanismo oficial de autenticación (OAuth) de TikTok for Developers.
   </p>
 
-  <h2>1. Qué hace TokVision</h2>
+  <h2>1. Qué hace la versión actual</h2>
   <ul>
-    <li>Permite iniciar sesión con tu cuenta de TikTok mediante el flujo oficial de TikTok Login Kit.</li>
-    <li>Muestra tu información básica de perfil (nombre, avatar, biografía) y la lista de vídeos que tú mismo has publicado, usando la Display API oficial de TikTok.</li>
-    <li>Permite reproducir vídeos y guardar favoritos/historial <strong>localmente en tu dispositivo</strong>.</li>
+    <li>Permite iniciar sesión con tu propia cuenta de TikTok mediante el flujo oficial de TikTok Login Kit (OAuth 2.0 + PKCE).</li>
+    <li>Guarda localmente y de forma cifrada los tokens de sesión y el identificador de cuenta necesarios para mantener la autenticación.</li>
+    <li>Permite cerrar sesión y eliminar la sesión guardada en el dispositivo.</li>
   </ul>
+  <p>
+    La versión actual todavía no consulta la Display API, no muestra perfiles ni listas de vídeos y no reproduce vídeos.
+    Favoritos e historial tampoco están implementados. Las funciones futuras descritas en la documentación del proyecto
+    no deben interpretarse como capacidades disponibles en esta versión.
+  </p>
 
   <h2>2. Qué NO hace TokVision</h2>
   <ul>
