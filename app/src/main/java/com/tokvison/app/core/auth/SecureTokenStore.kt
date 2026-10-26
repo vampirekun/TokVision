@@ -14,13 +14,18 @@ data class TikTokSession(
 
 /**
  * Tokens are the most sensitive thing this app stores — they live in
- * [EncryptedSharedPreferences] (AES-256, Keystore-backed master key), never in plain
- * `SharedPreferences`, never logged, never included in crash reports.
+ * EncryptedSharedPreferences (AES-256, Keystore-backed master key), never in plain
+ * SharedPreferences, never logged, never included in crash reports.
+ *
+ * The separate preferences file stores only a non-secret invalidation marker. It is written
+ * before encrypted-session cleanup so a failed cleanup cannot resurrect a rejected refresh
+ * token on the next process start.
  */
 interface TokenStore {
     fun save(session: TikTokSession)
     fun load(): TikTokSession?
     fun clear()
+    fun invalidate()
 }
 
 class SecureTokenStore(context: Context) : TokenStore {
@@ -36,16 +41,29 @@ class SecureTokenStore(context: Context) : TokenStore {
         EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM,
     )
 
+    // This file contains only a boolean tombstone, never tokens or user identifiers.
+    private val sessionFlags = context.applicationContext.getSharedPreferences(
+        "tokvison_session_state",
+        Context.MODE_PRIVATE,
+    )
+
     override fun save(session: TikTokSession) {
-        prefs.edit()
+        val saved = prefs.edit()
             .putString(KEY_OPEN_ID, session.openId)
             .putString(KEY_ACCESS_TOKEN, session.accessToken)
             .putString(KEY_REFRESH_TOKEN, session.refreshToken)
             .putLong(KEY_EXPIRES_AT, session.accessTokenExpiresAtMillis)
-            .apply()
+            .commit()
+        check(saved) { "Unable to persist encrypted session" }
+
+        // Clear the tombstone only after the replacement session is durably stored.
+        val markerCleared = sessionFlags.edit().remove(KEY_SESSION_INVALIDATED).commit()
+        check(markerCleared) { "Unable to clear session invalidation marker" }
     }
 
     override fun load(): TikTokSession? {
+        if (sessionFlags.getBoolean(KEY_SESSION_INVALIDATED, false)) return null
+
         val openId = prefs.getString(KEY_OPEN_ID, null) ?: return null
         val accessToken = prefs.getString(KEY_ACCESS_TOKEN, null) ?: return null
         val refreshToken = prefs.getString(KEY_REFRESH_TOKEN, null) ?: return null
@@ -53,8 +71,16 @@ class SecureTokenStore(context: Context) : TokenStore {
         return TikTokSession(openId, accessToken, refreshToken, expiresAt)
     }
 
-    override fun clear() {
-        prefs.edit().clear().apply()
+    override fun clear() = invalidate()
+
+    override fun invalidate() {
+        // Persist the fail-closed marker first. If encrypted storage cleanup fails, load()
+        // still refuses to restore the old session.
+        val marked = sessionFlags.edit().putBoolean(KEY_SESSION_INVALIDATED, true).commit()
+        check(marked) { "Unable to persist session invalidation marker" }
+
+        val cleared = prefs.edit().clear().commit()
+        check(cleared) { "Unable to clear encrypted session" }
     }
 
     private companion object {
@@ -62,5 +88,6 @@ class SecureTokenStore(context: Context) : TokenStore {
         const val KEY_ACCESS_TOKEN = "access_token"
         const val KEY_REFRESH_TOKEN = "refresh_token"
         const val KEY_EXPIRES_AT = "access_token_expires_at"
+        const val KEY_SESSION_INVALIDATED = "session_invalidated"
     }
 }
