@@ -28,6 +28,35 @@ interface TokenStore {
     fun invalidate()
 }
 
+/**
+ * Fail closed even if one persistence operation fails: always attempt encrypted cleanup after
+ * the marker write, then retry the failed route once before reporting an unrecoverable failure.
+ * If cleanup succeeds, a marker is not required because no rejected session remains to restore.
+ */
+internal fun invalidateStoredSession(
+    writeInvalidationMarker: () -> Boolean,
+    clearEncryptedSession: () -> Boolean,
+) {
+    val markerWritten = runCatching { writeInvalidationMarker() }.getOrDefault(false)
+    val sessionCleared = runCatching { clearEncryptedSession() }.getOrDefault(false)
+    if (sessionCleared) return
+
+    if (markerWritten) {
+        val clearedOnRetry = runCatching { clearEncryptedSession() }.getOrDefault(false)
+        if (clearedOnRetry) return
+        throw IllegalStateException("Unable to clear encrypted session; invalidation marker remains set.")
+    }
+
+    val markerWrittenOnRetry = runCatching { writeInvalidationMarker() }.getOrDefault(false)
+    val clearedOnRetry = runCatching { clearEncryptedSession() }.getOrDefault(false)
+    if (clearedOnRetry) return
+    if (markerWrittenOnRetry) {
+        throw IllegalStateException("Unable to clear encrypted session; invalidation marker remains set.")
+    }
+
+    throw IllegalStateException("Unable to invalidate session: marker persistence and encrypted cleanup failed twice.")
+}
+
 class SecureTokenStore(context: Context) : TokenStore {
     private val masterKey = MasterKey.Builder(context)
         .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
@@ -74,13 +103,12 @@ class SecureTokenStore(context: Context) : TokenStore {
     override fun clear() = invalidate()
 
     override fun invalidate() {
-        // Persist the fail-closed marker first. If encrypted storage cleanup fails, load()
-        // still refuses to restore the old session.
-        val marked = sessionFlags.edit().putBoolean(KEY_SESSION_INVALIDATED, true).commit()
-        check(marked) { "Unable to persist session invalidation marker" }
-
-        val cleared = prefs.edit().clear().commit()
-        check(cleared) { "Unable to clear encrypted session" }
+        invalidateStoredSession(
+            writeInvalidationMarker = {
+                sessionFlags.edit().putBoolean(KEY_SESSION_INVALIDATED, true).commit()
+            },
+            clearEncryptedSession = { prefs.edit().clear().commit() },
+        )
     }
 
     private companion object {
