@@ -78,6 +78,9 @@ class AuthRepository internal constructor(
         return try {
             val response = api.exchangeCodeForToken(receivedCode, pending.codeVerifier)
             applyTokenResponse(response)
+        } catch (cancelled: CancellationException) {
+            // Preserve structured concurrency: cancellation is not a recoverable login failure.
+            throw cancelled
         } catch (t: Throwable) {
             _state.value = AuthState.Error("No se pudo conectar con TikTok. Revisa tu conexión e intenta de nuevo.")
             Result.failure(t)
