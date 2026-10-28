@@ -19,7 +19,9 @@ fun secret(key: String, default: String) = secretsProperties.getProperty(key, de
 
 android {
     namespace = "com.tokvison.app"
-    compileSdk = 36
+    // Compose BOM 2026.09.00 and current AndroidX Core require API 37 to compile.
+    // Keep targetSdk at 36 so this build change does not opt users into new runtime behavior.
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.tokvison.app"
@@ -32,12 +34,12 @@ android {
             useSupportLibrary = true
         }
 
-        buildConfigField("String", "TIKTOK_CLIENT_KEY", "\"${secret("TIKTOK_CLIENT_KEY", "CHANGE_ME")}\"")
-        buildConfigField("String", "TIKTOK_CLIENT_SECRET", "\"${secret("TIKTOK_CLIENT_SECRET", "CHANGE_ME")}\"")
+        buildConfigField("String", "TIKTOK_CLIENT_KEY", "\"\${secret("TIKTOK_CLIENT_KEY", "CHANGE_ME")}\"")
+        buildConfigField("String", "TIKTOK_CLIENT_SECRET", "\"\${secret("TIKTOK_CLIENT_SECRET", "CHANGE_ME")}\"")
         buildConfigField(
             "String",
             "TIKTOK_REDIRECT_URI",
-            "\"${secret("TIKTOK_REDIRECT_URI", "https://CHANGE-ME.github.io/tokvison-oauth/callback")}\"",
+            "\"\${secret("TIKTOK_REDIRECT_URI", "https://CHANGE-ME.github.io/tokvison-oauth/callback")}\"",
         )
     }
 
@@ -86,7 +88,7 @@ dependencies {
     implementation("androidx.activity:activity-compose:1.10.1")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.9.4")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.9.4")
-    // Core 1.19.x and Navigation 2.10.x require compileSdk 37; pin compatible versions while targeting API 36.
+    // Keep Navigation on 2.9.x until a separate 2.10.x migration is validated.
     implementation("androidx.navigation:navigation-compose:2.9.8")
 
     // Jetpack Compose for TV: focus/D-pad-aware Material components (Surface, Button, Card…).
