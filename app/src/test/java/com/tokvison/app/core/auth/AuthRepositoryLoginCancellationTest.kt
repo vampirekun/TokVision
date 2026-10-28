@@ -15,7 +15,16 @@ class AuthRepositoryLoginCancellationTest {
             api = FakeTikTokAuthClient { _, _ -> throw CancellationException("login cancelled") },
             tokenStore = store,
         )
-        val pending = repository.beginLogin()
+        // Keep this test focused on cancellation: beginLogin() calls android.util.Base64
+        // through PkceUtil, which is not available in plain JVM unit tests.
+        val pending = PendingLogin(
+            authorizationUrl = "https://example.invalid/authorize",
+            codeVerifier = "test-verifier",
+            state = "test-state",
+        )
+        AuthRepository::class.java.getDeclaredField("pendingLogin").apply {
+            isAccessible = true
+        }.set(repository, pending)
 
         try {
             repository.completeLogin("authorization-code", pending.state)
