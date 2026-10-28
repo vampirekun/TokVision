@@ -34,12 +34,12 @@ android {
             useSupportLibrary = true
         }
 
-        buildConfigField("String", "TIKTOK_CLIENT_KEY", "\"" + secret("TIKTOK_CLIENT_KEY", "CHANGE_ME") + "\"")
-        buildConfigField("String", "TIKTOK_CLIENT_SECRET", "\"" + secret("TIKTOK_CLIENT_SECRET", "CHANGE_ME") + "\"")
+        buildConfigField("String", "TIKTOK_CLIENT_KEY", "\"${secret("TIKTOK_CLIENT_KEY", "CHANGE_ME")}\"")
+        buildConfigField("String", "TIKTOK_CLIENT_SECRET", "\"${secret("TIKTOK_CLIENT_SECRET", "CHANGE_ME")}\"")
         buildConfigField(
             "String",
             "TIKTOK_REDIRECT_URI",
-            "\"" + secret("TIKTOK_REDIRECT_URI", "https://CHANGE-ME.github.io/tokvison-oauth/callback") + "\"",
+            "\"${secret("TIKTOK_REDIRECT_URI", "https://CHANGE-ME.github.io/tokvison-oauth/callback")}\"",
         )
     }
 
