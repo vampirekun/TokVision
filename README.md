@@ -11,7 +11,7 @@ TikTok **no ofrece hoy una API pública** de feed algorítmico ("For You"/"Follo
 ## Requisitos
 
 - JDK 17
-- Android SDK (compileSdk 36, build-tools 36.1.0)
+- Android SDK (compileSdk 37, build-tools 36.1.0)
 - Un dispositivo o caja Android TV / Google TV con **Android 6.0 (API 23) o superior**
 
 ## Compilar
@@ -54,7 +54,8 @@ UI en Jetpack Compose for TV (`androidx.tv:tv-material`), sin framework de naveg
 | UI | Jetpack Compose for TV (`tv-material` 1.1.0) |
 | Lenguaje | Kotlin 2.2.21 |
 | Build | AGP 8.13.2 + Gradle 8.13 |
-| compileSdk / targetSdk | 36 |
+| compileSdk | 37 |
+| targetSdk | 36 |
 | minSdk | 23 (Android 6.0 — requerido por `androidx.tv`) |
 
 ## Próximas fases

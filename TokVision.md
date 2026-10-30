@@ -128,7 +128,8 @@ Capas futuras (aún no creadas, se añaden según la fase):
 |---|---|---|
 | UI | Jetpack Compose for TV (`androidx.tv:tv-material` 1.1.0) | Foco/D-pad de primera clase, más ligero que Leanback clásico (en mantenimiento mínimo) |
 | Lenguaje/Build | Kotlin 2.2.21, AGP 8.13.2, Gradle 8.13 | Combinación estable y mutuamente compatible verificada por compilación real (ver nota de versiones abajo) |
-| compileSdk/targetSdk | 36 | Requerido por dependencias `androidx.tv`/Compose actuales |
+| compileSdk | 37 | Requerido por el Compose BOM y los artefactos AndroidX actuales. |
+| targetSdk | 36 | Se mantiene sin cambios para no activar comportamiento nuevo en runtime. |
 | minSdk | 23 | `androidx.tv:tv-foundation` exige mínimo 23 (Android 6.0); ajustado desde el 21 original tras un fallo real de merge de manifiesto |
 | Networking (futuro) | Ktor + kotlinx.serialization | Ligero, coroutines-first, sin Retrofit+Gson+RxJava |
 | Storage sesión (futuro) | EncryptedSharedPreferences | Tokens cifrados con Keystore, sin librerías pesadas |
