@@ -6,9 +6,9 @@ plugins {
     id("org.jetbrains.kotlin.plugin.serialization")
 }
 
-// TikTok Login Kit credentials never get hardcoded/committed: they're read from a local,
-// git-ignored properties file and injected as BuildConfig fields. Placeholders keep the
-// project buildable before the developer account/app registration is complete (see BUILD.md).
+// TikTok client secrets are allowed only in local debug builds. Android release APKs are
+// public clients: the secret must never be packaged, and direct token exchange stays disabled
+// until a backend/token broker is available.
 val secretsProperties = Properties().apply {
     val secretsFile = rootProject.file("secrets.properties")
     if (secretsFile.exists()) {
@@ -16,6 +16,7 @@ val secretsProperties = Properties().apply {
     }
 }
 fun secret(key: String, default: String) = secretsProperties.getProperty(key, default)
+val debugClientSecret = secret("TIKTOK_CLIENT_SECRET", "CHANGE_ME")
 
 android {
     namespace = "com.tokvison.app"
@@ -35,7 +36,6 @@ android {
         }
 
         buildConfigField("String", "TIKTOK_CLIENT_KEY", "\"${secret("TIKTOK_CLIENT_KEY", "CHANGE_ME")}\"")
-        buildConfigField("String", "TIKTOK_CLIENT_SECRET", "\"${secret("TIKTOK_CLIENT_SECRET", "CHANGE_ME")}\"")
         buildConfigField(
             "String",
             "TIKTOK_REDIRECT_URI",
@@ -47,12 +47,16 @@ android {
         debug {
             isDebuggable = true
             applicationIdSuffix = ".debug"
+            // Local/Sandbox-only convenience. This value is still extractable from a debug APK.
+            buildConfigField("String", "TIKTOK_CLIENT_SECRET", "\"${debugClientSecret}\"")
         }
         release {
             isMinifyEnabled = true
             isShrinkResources = true
             isDebuggable = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            // Never package the TikTok app secret in a distributable Android client.
+            buildConfigField("String", "TIKTOK_CLIENT_SECRET", "\"\"")
         }
     }
 
@@ -119,4 +123,22 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.3.0")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.7.0")
+}
+
+tasks.register("verifyReleaseClientSecretBoundary") {
+    dependsOn("generateReleaseBuildConfig")
+    doLast {
+        val generatedBuildConfig = layout.buildDirectory
+            .file("generated/source/buildConfig/release/com/tokvison/app/BuildConfig.java")
+            .get()
+            .asFile
+        check(generatedBuildConfig.isFile) {
+            "Release BuildConfig was not generated at ${generatedBuildConfig.absolutePath}"
+        }
+        val secretDeclaration = generatedBuildConfig.readLines()
+            .firstOrNull { it.contains("TIKTOK_CLIENT_SECRET") }
+        check(secretDeclaration?.contains("= \"\";") == true) {
+            "Release BuildConfig must contain an empty TIKTOK_CLIENT_SECRET."
+        }
+    }
 }
