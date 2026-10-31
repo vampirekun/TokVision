@@ -33,10 +33,10 @@ class TikTokAuthConfigTest {
     @Test
     fun releaseBlockReasonDoesNotEchoTheClientSecret() {
         val secret = "do-not-echo-this-value"
-        val reason = TikTokAuthConfig.directTokenExchangeBlockReason(false, secret)
+        val message = requireNotNull(TikTokAuthConfig.directTokenExchangeBlockReason(false, secret))
 
-        assertTrue(reason != null)
-        assertFalse(reason!!.contains(secret))
-        assertFalse(reason.contains("refresh_token", ignoreCase = true))
+        assertTrue(message.isNotBlank())
+        assertFalse(message.contains(secret))
+        assertFalse(message.contains("refresh_token", ignoreCase = true))
     }
 }
