@@ -9,9 +9,9 @@ import io.ktor.http.Parameters
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 
-/** Thin wrapper around the two Login Kit token endpoints. No feed/search calls live here —
- * those don't exist officially (see KNOWN_LIMITATIONS.md). This only ever talks to
- * open.tiktokapis.com's OAuth token endpoint. */
+/** Thin wrapper around the two Login Kit token endpoints. Direct exchange is debug-only:
+ * release builds must use a backend/token broker so the app secret and refresh tokens remain
+ * server-side. No feed/search calls live here (see KNOWN_LIMITATIONS.md). */
 interface TikTokAuthClient {
     suspend fun exchangeCodeForToken(code: String, codeVerifier: String): TikTokTokenResponse
     suspend fun refreshAccessToken(refreshToken: String): TikTokTokenResponse
@@ -21,6 +21,7 @@ class TikTokAuthApi(
     private val httpClient: HttpClient = defaultClient(),
 ) : TikTokAuthClient {
     override suspend fun exchangeCodeForToken(code: String, codeVerifier: String): TikTokTokenResponse {
+        requireDirectTokenExchangeAllowed()
         val response = httpClient.submitForm(
             url = TikTokAuthConfig.TOKEN_URL,
             formParameters = Parameters.build {
@@ -36,6 +37,7 @@ class TikTokAuthApi(
     }
 
     override suspend fun refreshAccessToken(refreshToken: String): TikTokTokenResponse {
+        requireDirectTokenExchangeAllowed()
         val response = httpClient.submitForm(
             url = TikTokAuthConfig.TOKEN_URL,
             formParameters = Parameters.build {
@@ -46,6 +48,13 @@ class TikTokAuthApi(
             },
         )
         return json.decodeFromString(TikTokTokenResponse.serializer(), response.bodyAsText())
+    }
+
+    private fun requireDirectTokenExchangeAllowed() {
+        val blockReason = TikTokAuthConfig.directTokenExchangeBlockReason()
+        if (blockReason != null) {
+            throw IllegalStateException(blockReason)
+        }
     }
 
     private companion object {
