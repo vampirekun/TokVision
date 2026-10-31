@@ -14,6 +14,12 @@ class LoginViewModel(private val authRepository: AuthRepository) : ViewModel() {
     val authState: StateFlow<AuthState> = authRepository.state
     val pendingLogin: PendingLogin = authRepository.beginLogin()
 
+    init {
+        if (authRepository.state.value !is AuthState.LoggedIn) {
+            TikTokAuthConfig.directTokenExchangeBlockReason()?.let(authRepository::reportAuthorizationError)
+        }
+    }
+
     /**
      * Called from the WebView's navigation interceptor for every URL it's about to load.
      * Returns true when the URL was TikTok's redirect back to us (regardless of outcome),
