@@ -117,6 +117,9 @@ dependencies {
 
     // Session tokens live in EncryptedSharedPreferences (Keystore-backed), never in plain prefs.
     implementation("androidx.security:security-crypto:1.1.0")
+    // R8 needs these annotation classes present when shrinking the Tink dependency graph.
+    implementation("com.google.errorprone:error_prone_annotations:2.51.0")
+    implementation("com.google.code.findbugs:jsr305:3.0.2")
 
     debugImplementation("androidx.compose.ui:ui-tooling")
 
