@@ -35,11 +35,11 @@ android {
             useSupportLibrary = true
         }
 
-        buildConfigField("String", "TIKTOK_CLIENT_KEY", "\"${secret("TIKTOK_CLIENT_KEY", "CHANGE_ME")}\"")
+        buildConfigField("String", "TIKTOK_CLIENT_KEY", "\"\${secret("TIKTOK_CLIENT_KEY", "CHANGE_ME")}\\"")
         buildConfigField(
             "String",
             "TIKTOK_REDIRECT_URI",
-            "\"${secret("TIKTOK_REDIRECT_URI", "https://CHANGE-ME.github.io/tokvison-oauth/callback")}\"",
+            "\"\${secret("TIKTOK_REDIRECT_URI", "https://CHANGE-ME.github.io/tokvison-oauth/callback")}\\"",
         )
     }
 
@@ -48,7 +48,7 @@ android {
             isDebuggable = true
             applicationIdSuffix = ".debug"
             // Local/Sandbox-only convenience. This value is still extractable from a debug APK.
-            buildConfigField("String", "TIKTOK_CLIENT_SECRET", "\"${debugClientSecret}\"")
+            buildConfigField("String", "TIKTOK_CLIENT_SECRET", "\"\${debugClientSecret}\\"")
         }
         release {
             isMinifyEnabled = true
@@ -124,6 +124,7 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-tooling")
 
     testImplementation("junit:junit:4.13.2")
+    testImplementation("io.ktor:ktor-client-mock:3.6.0")
     androidTestImplementation("androidx.test.ext:junit:1.3.0")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.7.0")
 }
@@ -136,7 +137,7 @@ tasks.register("verifyReleaseClientSecretBoundary") {
             .get()
             .asFile
         check(generatedBuildConfig.isFile) {
-            "Release BuildConfig was not generated at ${generatedBuildConfig.absolutePath}"
+            "Release BuildConfig was not generated at \${generatedBuildConfig.absolutePath}"
         }
         val secretDeclaration = generatedBuildConfig.readLines()
             .firstOrNull { it.contains("TIKTOK_CLIENT_SECRET") }
