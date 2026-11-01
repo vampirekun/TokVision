@@ -19,6 +19,7 @@ interface TikTokAuthClient {
 
 class TikTokAuthApi(
     private val httpClient: HttpClient = defaultClient(),
+    private val blockReasonProvider: () -> String? = TikTokAuthConfig::directTokenExchangeBlockReason,
 ) : TikTokAuthClient {
     override suspend fun exchangeCodeForToken(code: String, codeVerifier: String): TikTokTokenResponse {
         requireDirectTokenExchangeAllowed()
@@ -51,7 +52,7 @@ class TikTokAuthApi(
     }
 
     private fun requireDirectTokenExchangeAllowed() {
-        val blockReason = TikTokAuthConfig.directTokenExchangeBlockReason()
+        val blockReason = blockReasonProvider()
         if (blockReason != null) {
             throw IllegalStateException(blockReason)
         }
