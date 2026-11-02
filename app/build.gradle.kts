@@ -87,7 +87,7 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.9.4")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.9.4")
     // Core 1.19.x and Navigation 2.10.x require compileSdk 37; pin compatible versions while targeting API 36.
-    implementation("androidx.navigation:navigation-compose:2.9.8")
+    implementation("androidx.navigation:navigation-compose:2.10.2")
 
     // Jetpack Compose for TV: focus/D-pad-aware Material components (Surface, Button, Card…).
     // tv-foundation's lazy-list wrappers were folded into plain Compose Foundation upstream,
