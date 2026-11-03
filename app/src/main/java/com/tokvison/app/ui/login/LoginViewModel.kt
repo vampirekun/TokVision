@@ -26,7 +26,7 @@ class LoginViewModel(private val authRepository: AuthRepository) : ViewModel() {
      * telling the caller to cancel that navigation instead of letting the WebView load it.
      */
     fun tryHandleRedirect(url: String): Boolean {
-        if (!url.startsWith(TikTokAuthConfig.redirectUri)) return false
+        if (!matchesOAuthRedirect(TikTokAuthConfig.redirectUri, url)) return false
 
         val uri = Uri.parse(url)
         val code = uri.getQueryParameter("code")
