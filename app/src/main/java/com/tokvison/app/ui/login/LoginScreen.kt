@@ -39,8 +39,20 @@ import com.tokvison.app.core.auth.AuthState
 @Composable
 fun LoginScreen(viewModel: LoginViewModel, onFinished: () -> Unit) {
     val authState by viewModel.authState.collectAsState()
+    val pendingLogin = viewModel.pendingLogin
     var isPageLoading by remember { mutableStateOf(true) }
     var webViewRef by remember { mutableStateOf<WebView?>(null) }
+
+    // viewModel() is Activity-scoped in the current root composition. The overlay can be
+    // removed and shown again while the same ViewModel survives, so every entry needs a
+    // new PKCE verifier/state pair rather than reusing the previous attempt.
+    LaunchedEffect(viewModel) {
+        viewModel.startLogin()
+    }
+
+    LaunchedEffect(pendingLogin) {
+        if (pendingLogin != null) isPageLoading = true
+    }
 
     BackHandler {
         val webView = webViewRef
@@ -61,41 +73,65 @@ fun LoginScreen(viewModel: LoginViewModel, onFinished: () -> Unit) {
     Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         val error = (authState as? AuthState.Error)?.message
         if (error != null) {
-            LoginErrorContent(message = error, onRetry = onFinished)
-        } else {
-            AndroidView(
-                modifier = Modifier.fillMaxSize(),
-                factory = { context ->
-                    WebView(context).apply {
-                        isFocusable = true
-                        isFocusableInTouchMode = true
-                        settings.javaScriptEnabled = true
-                        settings.domStorageEnabled = true
-                        webViewClient = object : WebViewClient() {
-                            @Deprecated("Deprecated in Java", ReplaceWith(""))
-                            @Suppress("OVERRIDE_DEPRECATION", "DEPRECATION")
-                            override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
-                                return url != null && viewModel.tryHandleRedirect(url)
-                            }
-
-                            override fun shouldOverrideUrlLoading(
-                                view: WebView,
-                                request: WebResourceRequest,
-                            ): Boolean = viewModel.tryHandleRedirect(request.url.toString())
-
-                            override fun onPageFinished(view: WebView?, url: String?) {
-                                isPageLoading = false
-                                view?.evaluateJavascript(dPadSpatialNavigationScript, null)
-                            }
-                        }
-                        webViewRef = this
-                        loadUrl(viewModel.pendingLogin.authorizationUrl)
-                        requestFocus()
+            val canRetry = viewModel.canRetry()
+            LoginErrorContent(
+                message = error,
+                buttonLabel = if (canRetry) "Reintentar" else "Volver",
+                onRetry = {
+                    if (canRetry) {
+                        viewModel.retry()
+                    } else {
+                        viewModel.cancel()
+                        onFinished()
                     }
                 },
             )
-            if (isPageLoading) {
+        } else {
+            val loginRequest = pendingLogin
+            if (loginRequest == null) {
                 LoginLoadingContent()
+            } else {
+                AndroidView(
+                    modifier = Modifier.fillMaxSize(),
+                    factory = { context ->
+                        WebView(context).apply {
+                            isFocusable = true
+                            isFocusableInTouchMode = true
+                            settings.javaScriptEnabled = true
+                            settings.domStorageEnabled = true
+                            webViewClient = object : WebViewClient() {
+                                @Deprecated("Deprecated in Java", ReplaceWith(""))
+                                @Suppress("OVERRIDE_DEPRECATION", "DEPRECATION")
+                                override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
+                                    return url != null && viewModel.tryHandleRedirect(url)
+                                }
+
+                                override fun shouldOverrideUrlLoading(
+                                    view: WebView,
+                                    request: WebResourceRequest,
+                                ): Boolean = viewModel.tryHandleRedirect(request.url.toString())
+
+                                override fun onPageFinished(view: WebView?, url: String?) {
+                                    isPageLoading = false
+                                    view?.evaluateJavascript(dPadSpatialNavigationScript, null)
+                                }
+                            }
+                            webViewRef = this
+                            loadUrl(loginRequest.authorizationUrl)
+                            requestFocus()
+                        }
+                    },
+                    onRelease = { released ->
+                        if (webViewRef === released) webViewRef = null
+                        released.stopLoading()
+                        released.webChromeClient = null
+                        released.webViewClient = WebViewClient()
+                        released.destroy()
+                    },
+                )
+                if (isPageLoading) {
+                    LoginLoadingContent()
+                }
             }
         }
     }
@@ -251,7 +287,7 @@ private fun LoginLoadingContent() {
 }
 
 @Composable
-private fun LoginErrorContent(message: String, onRetry: () -> Unit) {
+private fun LoginErrorContent(message: String, buttonLabel: String, onRetry: () -> Unit) {
     Box(modifier = Modifier.fillMaxSize().padding(48.dp), contentAlignment = Alignment.Center) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -266,7 +302,7 @@ private fun LoginErrorContent(message: String, onRetry: () -> Unit) {
                     focusedContainerColor = MaterialTheme.colorScheme.primary,
                 ),
             ) {
-                Text(text = "Volver", modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp))
+                Text(text = buttonLabel, modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp))
             }
         }
     }
