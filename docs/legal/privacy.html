@@ -25,77 +25,152 @@
 </head>
 <body>
   <h1>Política de Privacidad de TokVision</h1>
-  <p><em>Última actualización: 27 de octubre de 2026</em></p>
+  <p><em>Última actualización: 4 de noviembre de 2026</em></p>
 
   <p>
-    TokVision es una aplicación cliente para Android TV / Google TV que se conecta a tu
-    propia cuenta de TikTok mediante el mecanismo oficial de autenticación de TikTok for
-    Developers (OAuth 2.0 + PKCE). Esta página explica qué datos procesa la aplicación,
-    dónde se almacenan y con quién se comparten.
+    TokVision es una aplicación cliente para Android TV / Google TV que, en su alcance actual,
+    permite iniciar y cerrar sesión con una cuenta propia de TikTok mediante Login Kit
+    (OAuth 2.0 + PKCE). La Display API, los perfiles, los vídeos, los favoritos y el historial
+    todavía no están implementados. Esta política describe el comportamiento comprobado en el código
+    actual, no funciones futuras del roadmap.
   </p>
 
-  <h2>1. Qué datos procesa la versión actual</h2>
+  <h2>1. Datos que procesa la versión actual</h2>
   <table>
-    <tr><th>Dato</th><th>Origen</th><th>Uso en la versión actual</th></tr>
-    <tr><td><code>open_id</code></td><td>Respuesta OAuth de TikTok Login Kit</td><td>Identificar la cuenta conectada; no se consulta el perfil.</td></tr>
-    <tr><td><code>access_token</code>, <code>refresh_token</code> y expiración</td><td>Endpoint OAuth de TikTok Login Kit</td><td>Mantener y renovar la sesión.</td></tr>
-    <tr><td><code>state</code> y <code>code_verifier</code> de PKCE</td><td>Generados para cada intento de inicio de sesión</td><td>Validar el retorno OAuth; se mantienen en memoria y se descartan al completar o cancelar el flujo.</td></tr>
-    <tr><td>Nombre, avatar, biografía y vídeos propios</td><td>No se obtienen en la versión actual; los endpoints Display API aún no están implementados.</td><td>No se muestran ni almacenan. El scope <code>video.list</code> no se solicita.</td></tr>
-    <tr><td>Favoritos e historial de reproducción</td><td>Funcionalidad aún no implementada</td><td>No se almacenan; no existe todavía una base de datos local para ellos.</td></tr>
+    <tr><th>Dato</th><th>Origen</th><th>Uso y persistencia</th></tr>
+    <tr>
+      <td><code>state</code> y <code>code_verifier</code> de PKCE</td>
+      <td>Generados por TokVision para cada intento de login</td>
+      <td>Validan el callback OAuth. Permanecen en memoria durante el intento y se descartan al completar o cancelar; no se guardan en disco.</td>
+    </tr>
+    <tr>
+      <td>Código de autorización</td>
+      <td>Callback de TikTok dentro del WebView</td>
+      <td>Se intercambia con TikTok junto con el <code>code_verifier</code>; no se conserva como historial local.</td>
+    </tr>
+    <tr>
+      <td><code>open_id</code></td>
+      <td>Respuesta del endpoint OAuth de TikTok</td>
+      <td>Identifica localmente la cuenta conectada. Se almacena cifrado en el dispositivo; no se consulta el perfil.</td>
+    </tr>
+    <tr>
+      <td><code>access_token</code>, <code>refresh_token</code> y expiración</td>
+      <td>Respuesta del endpoint OAuth de TikTok</td>
+      <td>Se almacenan cifrados para mantener la sesión. La rutina de renovación está preparada en la capa de autenticación, pero todavía no hay una función de Display API que la invoque.</td>
+    </tr>
+    <tr>
+      <td>Contraseña de TikTok</td>
+      <td>La introduce el usuario en la página oficial de TikTok</td>
+      <td>TokVision no la lee ni la almacena; la autenticación ocurre en el WebView de TikTok.</td>
+    </tr>
+    <tr>
+      <td>Nombre, avatar, biografía y vídeos propios</td>
+      <td>No se obtienen en la versión actual</td>
+      <td>No se consultan ni almacenan. No se solicita el scope <code>video.list</code>.</td>
+    </tr>
+    <tr>
+      <td>Favoritos e historial de reproducción</td>
+      <td>Funcionalidad no implementada</td>
+      <td>No existe una base de datos local para esos datos y no se guardan.</td>
+    </tr>
   </table>
 
   <p>
-    La versión actual solicita únicamente el scope <code>user.info.basic</code> para el flujo de identidad OAuth.
-    No llama a <code>/v2/user/info/</code>, <code>/v2/video/list/</code> ni <code>/v2/video/query/</code>;
-    el scope <code>video.list</code> se añadirá solo cuando la función de vídeos propios esté implementada.
-    TokVision tampoco solicita seguidores/seguidos, mensajes privados ni contenido de otros usuarios.
+    La autorización solicita únicamente el scope <code>user.info.basic</code>. La versión actual no llama a
+    <code>/v2/user/info/</code>, <code>/v2/video/list/</code> ni <code>/v2/video/query/</code>.
+    Tampoco solicita seguidores/seguidos, mensajes privados ni contenido de otras cuentas.
+    Los valores de calidad y reproducción visibles en Ajustes son placeholders, no preferencias persistidas.
   </p>
 
-  <h2>2. Dónde se almacenan tus datos</h2>
-  <p>
-    Los tokens de sesión y el <code>open_id</code> que TokVision guarda se almacenan en tu propio dispositivo Android TV.
-    El flujo de autenticación intercambia solicitudes y respuestas con los servidores oficiales de TikTok descritos en la sección 3; TokVision no almacena tu contraseña de TikTok.
-  </p>
-  <p>
-    La pantalla de autorización se abre en un WebView de Android. Las cookies y el almacenamiento web que TikTok utilice en ese WebView pueden persistir en el dispositivo después de cerrar sesión en TokVision. La aplicación no lee esas cookies ni las elimina explícitamente al cerrar sesión; tampoco las envía a un servidor propio.
-  </p>
+  <h2>2. Dónde se almacenan los datos</h2>
   <ul>
-    <li><code>open_id</code>, los tokens de sesión y su expiración se guardan cifrados mediante <code>EncryptedSharedPreferences</code>, respaldados por Android Keystore.</li>
-    <li>El estado PKCE (<code>state</code> y <code>code_verifier</code>) solo vive en memoria durante el intento de login; no se persiste.</li>
-    <li>Los favoritos e historial aún no existen como funciones y no se guardan. Los valores de calidad/reproducción que aparecen en Ajustes son placeholders, no preferencias persistidas.</li>
-    <li>TokVision no tiene servidor propio ni backend; no existe una base de datos remota controlada por sus desarrolladores.</li>
+    <li><code>open_id</code>, access token, refresh token y expiración se guardan en <code>EncryptedSharedPreferences</code>, con una clave maestra respaldada por Android Keystore.</li>
+    <li>El estado PKCE (<code>state</code> y <code>code_verifier</code>) y el código de autorización viven solo durante el flujo de login; no se persisten como historial.</li>
+    <li>El archivo privado de estado de sesión contiene únicamente una marca booleana de invalidación, no tokens ni identificadores.</li>
+    <li>El manifiesto de Android desactiva el backup de datos de la aplicación (<code>allowBackup=false</code>).</li>
+    <li>TokVision no tiene servidor propio, backend ni base de datos remota controlada por sus desarrolladores.</li>
   </ul>
-
-  <h2>3. Con quién se comparten tus datos</h2>
   <p>
-    El cliente HTTP de TokVision usa el endpoint OAuth de <code>open.tiktokapis.com</code> para intercambiar o renovar tokens.
-    El WebView abre la página oficial de autorización de <code>tiktok.com</code>, que puede cargar los recursos propios de TikTok.
-    La versión actual no llama a la Display API ni obtiene perfiles o vídeos. TokVision no incluye publicidad ni analítica de terceros,
-    no tiene backend propio y no vende ni comparte tus datos con fines comerciales.
+    La pantalla de autorización se abre en un WebView de Android. TikTok puede mantener cookies y almacenamiento web
+    propios en ese WebView. TokVision no lee esas cookies ni las elimina explícitamente al cerrar sesión; pueden
+    permanecer en el dispositivo hasta que se borren los datos de la aplicación.
   </p>
 
-  <h2>4. Cómo eliminar tus datos</h2>
+  <h2>3. Destinos de red y transferencias</h2>
+  <ul>
+    <li><code>https://www.tiktok.com/v2/auth/authorize/</code>: página oficial de autorización que se abre en el WebView. TikTok puede cargar recursos adicionales de sus propios dominios durante ese proceso.</li>
+    <li><code>https://open.tiktokapis.com/v2/oauth/token/</code>: endpoint OAuth al que el cliente HTTP envía el código de autorización y el verificador PKCE para el intercambio; el flujo de renovación, cuando sea invocado, envía el refresh token.</li>
+  </ul>
   <p>
-    Puedes cerrar sesión desde <strong>Ajustes → Cuenta → Cerrar sesión</strong>; esto invalida la sesión OAuth local y elimina los tokens y el <code>open_id</code> guardados por TokVision.
-    El cierre de sesión no revoca por sí solo el permiso en los servidores de TikTok ni elimina explícitamente las cookies o el almacenamiento web del WebView, por lo que la sesión web de TikTok podría mantenerse para futuros inicios de sesión.
-    Para revocar el permiso, abre la configuración de tu cuenta de TikTok → Seguridad y privacidad → Aplicaciones y sitios web conectados.
-    Para borrar también las cookies y el almacenamiento del WebView, borra los datos de TokVision desde los ajustes de Android; esto elimina asimismo la sesión local cifrada. Desinstalar TokVision también elimina los datos locales de la aplicación.
-    Como favoritos e historial aún no están implementados, esta versión no tiene esos registros que borrar.
+    En el intercambio OAuth actual también se envían el client key, el redirect URI y el client secret configurado para el build.
+    TikTok recibe esos datos y puede procesar la dirección IP, datos técnicos de conexión, cookies y otra información de la
+    sesión de autorización conforme a sus propias políticas. Consulta las políticas de TikTok para conocer ese tratamiento.
+  </p>
+  <p>
+    La versión actual no llama a la Display API, no consulta perfiles o vídeos y no envía datos a un backend de TokVision.
+    No se identificó otro destino de API de la aplicación en el código revisado.
   </p>
 
-  <h2>5. Menores de edad</h2>
+  <h2>4. Registros, analítica y diagnósticos</h2>
   <p>
-    TokVision no está dirigido a menores de edad y no recopila deliberadamente
-    información de menores. El uso de la app requiere iniciar sesión con una cuenta de
-    TikTok existente, sujeta a los propios requisitos de edad de TikTok.
+    La revisión del código fuente y de las dependencias declaradas no identificó SDK de publicidad, analítica,
+    telemetría ni reporte de fallos de terceros. Tampoco se encontraron llamadas de logging de la aplicación que
+    impriman tokens, refresh tokens, códigos OAuth o el client secret. Los errores de autenticación se presentan
+    al usuario mediante mensajes genéricos; no se envían a un servidor de TokVision.
+  </p>
+  <p>
+    Android/Google y TikTok pueden generar o procesar diagnósticos y datos técnicos bajo sus propias políticas.
+    Esta declaración describe únicamente el comportamiento de la aplicación y las dependencias revisadas;
+    no controla los registros del sistema operativo ni los servicios de TikTok.
   </p>
 
-  <h2>6. Cambios a esta política</h2>
+  <h2>5. Retención, cierre de sesión y eliminación</h2>
   <p>
-    Si esta política cambia, la versión actualizada se publicará en esta misma URL.
+    Los tokens y el <code>open_id</code> permanecen cifrados en el dispositivo mientras la sesión local exista.
+    Puedes cerrar sesión desde <strong>Ajustes → Cuenta → Cerrar sesión</strong>; TokVision invalida la sesión local
+    e intenta eliminar el almacenamiento cifrado. Si el almacenamiento falla, conserva una marca local de invalidación
+    para evitar restaurar una sesión rechazada.
+  </p>
+  <p>
+    El cierre de sesión local no revoca por sí solo el permiso concedido en los servidores de TikTok y no elimina
+    explícitamente las cookies o el almacenamiento web del WebView. Para revocar el acceso, utiliza la configuración
+    de tu cuenta de TikTok → Seguridad y privacidad → Aplicaciones y sitios web conectados. Para eliminar también
+    los datos locales y cookies del WebView, borra los datos de TokVision desde los ajustes de Android o desinstala
+    la aplicación. TokVision no ofrece eliminación de la cuenta de TikTok.
+  </p>
+  <p>
+    Como los favoritos y el historial todavía no están implementados, esta versión no tiene esos registros que borrar.
+    No existe una copia de esos datos en servidores de TokVision.
   </p>
 
-  <h2>7. Contacto</h2>
+  <h2>6. Límite de seguridad del intercambio OAuth</h2>
+  <p>
+    El código actual realiza el intercambio OAuth desde el dispositivo Android. El <code>TIKTOK_CLIENT_SECRET</code>
+    configurado localmente se incorpora a <code>BuildConfig</code> y se envía desde la aplicación al endpoint de tokens.
+    Cualquier secreto incluido en un APK de Android puede extraerse; guardarlo en un archivo local ignorado por Git,
+    minificar u ofuscar el APK no lo convierte en un secreto seguro.
+  </p>
+  <p>
+    Por ese motivo, no distribuyas APKs de desarrollo ni builds que contengan un client secret real. PKCE protege
+    el flujo frente a la interceptación del código de autorización, pero no vuelve confidencial un secreto empaquetado
+    en un cliente público. La arquitectura apta para distribución requiere un backend/token broker HTTPS que realice
+    el intercambio y mantenga el client secret y los refresh tokens del lado servidor. Ese backend todavía no existe;
+    el login no debe considerarse listo para una distribución pública hasta que se implemente y acepte esa arquitectura.
+  </p>
+
+  <h2>7. Menores de edad</h2>
+  <p>
+    TokVision no está dirigido a menores de edad y no recopila deliberadamente información de menores.
+    El uso requiere una cuenta de TikTok existente, sujeta a los requisitos de edad y términos de TikTok.
+  </p>
+
+  <h2>8. Cambios a esta política</h2>
+  <p>
+    Si cambia el comportamiento de la aplicación o los datos que procesa, esta política se actualizará en la misma URL.
+    Las funciones futuras no se consideran disponibles hasta que estén implementadas y verificadas.
+  </p>
+
+  <h2>9. Contacto</h2>
   <p>
     Este proyecto es de código abierto. Consulta el repositorio en
     <a href="https://github.com/vampirekun/TokVision" target="_blank" rel="noopener">github.com/vampirekun/TokVision</a>
