@@ -28,3 +28,19 @@ internal fun matchesOAuthRedirect(configuredRedirectUri: String, candidateUrl: S
     if (!configured.rawAuthority.equals(candidate.rawAuthority, ignoreCase = true)) return false
     return configured.rawPath == candidate.rawPath
 }
+
+
+/**
+ * Allows ordinary top-level OAuth pages only over HTTPS. This is a transport
+ * guard, not a host allowlist: TikTok's manual challenge pages may use additional
+ * HTTPS hosts, so their exact set still needs device-level observation.
+ */
+internal fun isSecureOAuthWebViewNavigation(candidateUrl: String): Boolean {
+    val candidate = runCatching { URI(candidateUrl) }.getOrNull() ?: return false
+
+    if (!candidate.isAbsolute || candidate.isOpaque) return false
+    if (!candidate.scheme.equals("https", ignoreCase = true)) return false
+    if (candidate.host.isNullOrBlank() || candidate.rawUserInfo != null) return false
+
+    return candidate.port == -1 || candidate.port == 443
+}
