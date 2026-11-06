@@ -146,3 +146,27 @@ tasks.register("verifyReleaseClientSecretBoundary") {
         }
     }
 }
+
+
+tasks.register("verifyOAuthWebViewSecurityPolicy") {
+    val loginScreen = layout.projectDirectory.file(
+        "src/main/java/com/tokvison/app/ui/login/LoginScreen.kt",
+    )
+    doLast {
+        val source = loginScreen.asFile.readText()
+        val requiredPolicies = listOf(
+            "settings.allowFileAccess = false",
+            "settings.allowContentAccess = false",
+            "settings.mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW",
+            "settings.javaScriptCanOpenWindowsAutomatically = false",
+            "settings.setSupportMultipleWindows(false)",
+            "settings.safeBrowsingEnabled = true",
+            "override fun onReceivedSslError(",
+            "handler?.cancel()",
+        )
+        val missing = requiredPolicies.filterNot { policy -> source.contains(policy) }
+        check(missing.isEmpty()) {
+            "OAuth WebView security policy is incomplete: ${missing.joinToString()}"
+        }
+    }
+}
