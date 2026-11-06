@@ -163,6 +163,8 @@ tasks.register("verifyOAuthWebViewSecurityPolicy") {
             "settings.safeBrowsingEnabled = true",
             "override fun onReceivedSslError(",
             "handler?.cancel()",
+            "viewModel.shouldOverrideNavigation(url)",
+            "viewModel.shouldOverrideNavigation(request.url.toString())",
         )
         val missing = requiredPolicies.filterNot { policy -> source.contains(policy) }
         check(missing.isEmpty()) {
