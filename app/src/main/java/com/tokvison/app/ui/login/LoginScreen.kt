@@ -1,6 +1,10 @@
 package com.tokvison.app.ui.login
 
+import android.net.http.SslError
+import android.os.Build
+import android.webkit.SslErrorHandler
 import android.webkit.WebResourceRequest
+import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.activity.compose.BackHandler
@@ -97,8 +101,21 @@ fun LoginScreen(viewModel: LoginViewModel, onFinished: () -> Unit) {
                         WebView(context).apply {
                             isFocusable = true
                             isFocusableInTouchMode = true
+                            // TikTok's authorization page requires JavaScript and DOM storage.
                             settings.javaScriptEnabled = true
                             settings.domStorageEnabled = true
+
+                            // This remote OAuth WebView has no reason to read local files/content
+                            // or load insecure subresources, open script-created windows, or popups.
+                            settings.allowFileAccess = false
+                            settings.allowContentAccess = false
+                            settings.mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
+                            settings.javaScriptCanOpenWindowsAutomatically = false
+                            settings.setSupportMultipleWindows(false)
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                settings.safeBrowsingEnabled = true
+                            }
+
                             webViewClient = object : WebViewClient() {
                                 @Deprecated("Deprecated in Java", ReplaceWith(""))
                                 @Suppress("OVERRIDE_DEPRECATION", "DEPRECATION")
@@ -110,6 +127,15 @@ fun LoginScreen(viewModel: LoginViewModel, onFinished: () -> Unit) {
                                     view: WebView,
                                     request: WebResourceRequest,
                                 ): Boolean = viewModel.tryHandleRedirect(request.url.toString())
+
+                                override fun onReceivedSslError(
+                                    view: WebView?,
+                                    handler: SslErrorHandler?,
+                                    error: SslError?,
+                                ) {
+                                    // Never let a certificate error turn into an OAuth credential prompt.
+                                    handler?.cancel()
+                                }
 
                                 override fun onPageFinished(view: WebView?, url: String?) {
                                     isPageLoading = false
