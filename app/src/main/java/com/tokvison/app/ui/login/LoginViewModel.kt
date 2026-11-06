@@ -76,6 +76,16 @@ class LoginViewModel(
         return true
     }
 
+    /**
+     * Consume the exact OAuth callback and block non-HTTPS/opaque top-level
+     * navigations. Other HTTPS pages remain available for the manual challenge
+     * flow until its complete host set can be verified on a device.
+     */
+    fun shouldOverrideNavigation(url: String): Boolean {
+        if (tryHandleRedirect(url)) return true
+        return !isSecureOAuthWebViewNavigation(url)
+    }
+
     fun cancel() {
         pendingLogin = null
         authRepository.cancelLogin()
