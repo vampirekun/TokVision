@@ -120,13 +120,13 @@ fun LoginScreen(viewModel: LoginViewModel, onFinished: () -> Unit) {
                                 @Deprecated("Deprecated in Java", ReplaceWith(""))
                                 @Suppress("OVERRIDE_DEPRECATION", "DEPRECATION")
                                 override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
-                                    return url != null && viewModel.tryHandleRedirect(url)
+                                    return url == null || viewModel.shouldOverrideNavigation(url)
                                 }
 
                                 override fun shouldOverrideUrlLoading(
                                     view: WebView,
                                     request: WebResourceRequest,
-                                ): Boolean = viewModel.tryHandleRedirect(request.url.toString())
+                                ): Boolean = viewModel.shouldOverrideNavigation(request.url.toString())
 
                                 override fun onReceivedSslError(
                                     view: WebView?,
