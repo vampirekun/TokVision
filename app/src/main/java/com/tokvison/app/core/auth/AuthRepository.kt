@@ -28,6 +28,7 @@ data class PendingLogin(
 class AuthRepository internal constructor(
     private val api: TikTokAuthClient,
     private val tokenStore: TokenStore,
+    private val pendingLoginFactory: (() -> PendingLogin)? = null,
 ) {
     constructor(context: Context) : this(TikTokAuthApi(), SecureTokenStore(context))
     private val _state = MutableStateFlow<AuthState>(AuthState.LoggedOut)
@@ -45,8 +46,17 @@ class AuthRepository internal constructor(
         _state.value = if (session != null) AuthState.LoggedIn(session.openId) else AuthState.LoggedOut
     }
 
-    /** Step 1: call before showing the login WebView. */
+    /** Step 1: call before showing the login WebView. Starts a new, independent attempt. */
     fun beginLogin(): PendingLogin {
+        val next = pendingLoginFactory?.invoke() ?: createPendingLogin()
+        pendingLogin = next
+        if (_state.value !is AuthState.LoggedIn) {
+            _state.value = AuthState.LoggedOut
+        }
+        return next
+    }
+
+    private fun createPendingLogin(): PendingLogin {
         val codeVerifier = PkceUtil.generateCodeVerifier()
         val codeChallenge = PkceUtil.generateCodeChallenge(codeVerifier)
         val state = PkceUtil.generateState()
@@ -62,7 +72,7 @@ class AuthRepository internal constructor(
             append("&code_challenge_method=S256")
         }
 
-        return PendingLogin(url, codeVerifier, state).also { pendingLogin = it }
+        return PendingLogin(url, codeVerifier, state)
     }
 
     /** Step 2: call once the WebView is intercepted redirecting to [TikTokAuthConfig.redirectUri]. */
