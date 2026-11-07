@@ -165,6 +165,10 @@ tasks.register("verifyOAuthWebViewSecurityPolicy") {
             "handler?.cancel()",
             "viewModel.shouldOverrideNavigation(url)",
             "viewModel.shouldOverrideNavigation(request.url.toString())",
+            "function isTextEntry(el)",
+            "if (isTextEntry(active) &&",
+            "document.addEventListener('beforeinput'",
+            "caretAtEndBeforeInput",
         )
         val missing = requiredPolicies.filterNot { policy -> source.contains(policy) }
         check(missing.isEmpty()) {
