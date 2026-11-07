@@ -260,39 +260,70 @@ private const val dPadSpatialNavigationScript = """
     }
   }
 
+  function isTextEntry(el) {
+    if (!el) return false;
+    if (el.isContentEditable) return true;
+    var tag = el.tagName;
+    if (tag === 'TEXTAREA' || tag === 'SELECT') return true;
+    if (tag === 'INPUT') {
+      var type = (el.getAttribute('type') || 'text').toLowerCase();
+      return ['button', 'checkbox', 'radio', 'submit', 'reset', 'file', 'image', 'hidden'].indexOf(type) === -1;
+    }
+    var role = el.getAttribute('role');
+    return role === 'textbox' || role === 'searchbox';
+  }
+
   document.addEventListener('keydown', function(e) {
+    var active = document.activeElement;
+    // Let the native caret/selection behavior handle D-pad arrows while editing text
+    // or choosing a native select option. Spatial navigation is for non-editable controls.
+    if (isTextEntry(active) &&
+        ['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight'].indexOf(e.key) !== -1) {
+      return;
+    }
     if (e.key === 'ArrowDown') { moveFocus('down'); e.preventDefault(); }
     else if (e.key === 'ArrowUp') { moveFocus('up'); e.preventDefault(); }
     else if (e.key === 'ArrowLeft') { moveFocus('left'); e.preventDefault(); }
     else if (e.key === 'ArrowRight') { moveFocus('right'); e.preventDefault(); }
     else if (e.key === 'Enter') {
-      var active = document.activeElement;
       if (!active) return;
       var tag = active.tagName;
       var type = (active.getAttribute('type') || '').toLowerCase();
-      var isTextEntry = tag === 'TEXTAREA' ||
-        (tag === 'INPUT' && ['text', 'tel', 'email', 'password', 'search', 'number', 'url'].indexOf(type) !== -1);
       var isNativelyClickable = tag === 'A' || tag === 'BUTTON' ||
         (tag === 'INPUT' && (type === 'submit' || type === 'button' || type === 'checkbox' || type === 'radio'));
       // Skip synthetic click while typing (Enter in a text field shouldn't "click" it);
       // native <a>/<button>/<input> already get a click from the browser on Enter, so
       // this only covers ARIA-role custom elements (tabs, custom buttons, etc.).
-      if (!isTextEntry && !isNativelyClickable) {
+      if (!isTextEntry(active) && !isNativelyClickable) {
         active.click();
       }
     }
   }, true);
 
-  // WebView/Chromium + React controlled inputs sometimes fail to move the caret to the
-  // end after each keystroke coming from a D-pad/remote, so typed digits appear to
-  // insert in reverse order. Force the caret to the end after every input event, once
-  // React's own re-render has settled.
+  // Some TV WebViews place the caret at the start after appending digits to a phone field.
+  // Preserve that narrow workaround only when the user was already at the end before input;
+  // edits made in the middle of the value must keep their native selection position.
+  var caretAtEndBeforeInput = new WeakMap();
+  document.addEventListener('beforeinput', function(e) {
+    var el = e.target;
+    if (el && el.tagName === 'INPUT' && (el.getAttribute('type') || 'text').toLowerCase() === 'tel') {
+      caretAtEndBeforeInput.set(
+        el,
+        el.selectionStart === el.value.length && el.selectionEnd === el.value.length,
+      );
+    }
+  }, true);
+
   document.addEventListener('input', function(e) {
     var el = e.target;
-    if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA')) {
-      setTimeout(function() {
-        try { el.setSelectionRange(el.value.length, el.value.length); } catch (err) {}
-      }, 0);
+    if (el && el.tagName === 'INPUT' && (el.getAttribute('type') || 'text').toLowerCase() === 'tel') {
+      var wasAtEnd = caretAtEndBeforeInput.get(el);
+      caretAtEndBeforeInput.delete(el);
+      if (wasAtEnd) {
+        setTimeout(function() {
+          try { el.setSelectionRange(el.value.length, el.value.length); } catch (err) {}
+        }, 0);
+      }
     }
   }, true);
 
