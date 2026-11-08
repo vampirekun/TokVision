@@ -51,11 +51,11 @@ object TikTokAuthConfig {
     }
 
     private fun isValidRedirectUri(value: String): Boolean {
-        if (value.isBlank() || value.contains("CHANGE-ME", ignoreCase = true) ||
+        if (value.isBlank() || value != value.trim() || value.contains("CHANGE-ME", ignoreCase = true) ||
             value.contains("CHANGE_ME", ignoreCase = true)
         ) return false
 
-        val uri = runCatching { java.net.URI(value.trim()) }.getOrNull() ?: return false
+        val uri = runCatching { java.net.URI(value) }.getOrNull() ?: return false
         return uri.scheme.equals("https", ignoreCase = true) &&
             !uri.host.isNullOrBlank() &&
             uri.rawUserInfo == null &&
