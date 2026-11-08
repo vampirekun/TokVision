@@ -19,7 +19,7 @@ object TikTokAuthConfig {
     const val DEBUG_CLIENT_CONFIGURATION_REQUIRED_MESSAGE =
         "Configura TIKTOK_CLIENT_KEY y TIKTOK_REDIRECT_URI válidos en secrets.properties para pruebas locales."
 
-    private const val CLIENT_SECRET_PLACEHOLDER = "CHANGE_ME"
+    private const val CREDENTIAL_PLACEHOLDER = "CHANGE_ME"
 
     val clientKey: String get() = com.tokvison.app.BuildConfig.TIKTOK_CLIENT_KEY
     val clientSecret: String get() = com.tokvison.app.BuildConfig.TIKTOK_CLIENT_SECRET
@@ -42,13 +42,15 @@ object TikTokAuthConfig {
         redirectUri: String,
     ): String? = when {
         !isDebugBuild -> RELEASE_TOKEN_BROKER_REQUIRED_MESSAGE
-        clientKey.isBlank() || clientKey.trim() == CLIENT_SECRET_PLACEHOLDER ->
+        !isConfiguredCredential(clientKey) ->
             DEBUG_CLIENT_CONFIGURATION_REQUIRED_MESSAGE
         !isValidRedirectUri(redirectUri) -> DEBUG_CLIENT_CONFIGURATION_REQUIRED_MESSAGE
-        secret.isBlank() || secret.trim() == CLIENT_SECRET_PLACEHOLDER ->
-            DEBUG_CLIENT_SECRET_REQUIRED_MESSAGE
+        !isConfiguredCredential(secret) -> DEBUG_CLIENT_SECRET_REQUIRED_MESSAGE
         else -> null
     }
+
+    private fun isConfiguredCredential(value: String): Boolean =
+        value.isNotBlank() && value == value.trim() && value != CREDENTIAL_PLACEHOLDER
 
     private fun isValidRedirectUri(value: String): Boolean {
         if (value.isBlank() || value != value.trim() || value.contains("CHANGE-ME", ignoreCase = true) ||
