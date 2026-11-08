@@ -69,6 +69,18 @@ class TikTokAuthConfigTest {
         assertEquals(
             TikTokAuthConfig.DEBUG_CLIENT_CONFIGURATION_REQUIRED_MESSAGE,
             TikTokAuthConfig.directTokenExchangeBlockReason(
+                true, "sandbox-client-key", secret, " https://example.com/callback/",
+            ),
+        )
+        assertEquals(
+            TikTokAuthConfig.DEBUG_CLIENT_CONFIGURATION_REQUIRED_MESSAGE,
+            TikTokAuthConfig.directTokenExchangeBlockReason(
+                true, "sandbox-client-key", secret, "https://example.com/callback/ ",
+            ),
+        )
+        assertEquals(
+            TikTokAuthConfig.DEBUG_CLIENT_CONFIGURATION_REQUIRED_MESSAGE,
+            TikTokAuthConfig.directTokenExchangeBlockReason(
                 true, "sandbox-client-key", secret, "https://CHANGE-ME.github.io/callback/",
             ),
         )
