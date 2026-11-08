@@ -41,6 +41,12 @@ class TikTokAuthConfigTest {
                 true, clientKey, "  ", redirectUri,
             ),
         )
+        assertEquals(
+            TikTokAuthConfig.DEBUG_CLIENT_SECRET_REQUIRED_MESSAGE,
+            TikTokAuthConfig.directTokenExchangeBlockReason(
+                true, clientKey, " sandbox-client-secret ", redirectUri,
+            ),
+        )
     }
 
     @Test
@@ -55,6 +61,12 @@ class TikTokAuthConfigTest {
         assertEquals(
             TikTokAuthConfig.DEBUG_CLIENT_CONFIGURATION_REQUIRED_MESSAGE,
             TikTokAuthConfig.directTokenExchangeBlockReason(true, "CHANGE_ME", secret, redirectUri),
+        )
+        assertEquals(
+            TikTokAuthConfig.DEBUG_CLIENT_CONFIGURATION_REQUIRED_MESSAGE,
+            TikTokAuthConfig.directTokenExchangeBlockReason(
+                true, " sandbox-client-key ", secret, redirectUri,
+            ),
         )
         assertEquals(
             TikTokAuthConfig.DEBUG_CLIENT_CONFIGURATION_REQUIRED_MESSAGE,
