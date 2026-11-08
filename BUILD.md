@@ -26,11 +26,11 @@ Ya tienes cuenta en [developers.tiktok.com](https://developers.tiktok.com), así
    - **Description**: describe brevemente qué hace (ver sugerencia abajo).
    - **Terms of Service URL**: `https://vampirekun.github.io/TokVision/legal/terms.html`
    - **Privacy Policy URL**: `https://vampirekun.github.io/TokVision/legal/privacy.html`
-   - **Platforms**: marca **Web** (NO "Android" — el SDK nativo de Android depende de la app oficial de TikTok instalada en el teléfono, que no existe para Android TV; por eso TokVision usa el flujo web genérico dentro de un WebView en la propia TV. Ver [TokVision.md](/c:/Users/owner/Development/TokVision/TokVision.md) sección 5 para el detalle completo).
+   - **Platforms**: marca **Web** (NO "Android" — el SDK nativo de Android depende de la app oficial de TikTok instalada en el teléfono, que no existe para Android TV; por eso TokVision usa el flujo web genérico dentro de un WebView en la propia TV. Ver [TokVision.md](TokVision.md) sección 5 para el detalle completo).
 
    Sugerencia de texto para **Description** (120 caracteres máx.): `Cliente ligero de TikTok para Android TV: ve tu perfil y tus videos con el control remoto.`
 
-   Las páginas de Términos de Servicio y Política de Privacidad ya están escritas y publicadas en este repositorio — ver [docs/legal/terms.html](/c:/Users/owner/Development/TokVision/docs/legal/terms.html) y [docs/legal/privacy.html](/c:/Users/owner/Development/TokVision/docs/legal/privacy.html). Descritas honestamente: qué datos accede TokVision (perfil y vídeos propios vía Display API), dónde se guardan (solo en el dispositivo, tokens cifrados), y que no hay backend propio ni terceros involucrados.
+   Las páginas de Términos de Servicio y Política de Privacidad ya están escritas y publicadas en este repositorio — ver [docs/legal/terms.html](docs/legal/terms.html) y [docs/legal/privacy.html](docs/legal/privacy.html). Descritas honestamente: qué datos accede TokVision (perfil y vídeos propios vía Display API), dónde se guardan (solo en el dispositivo, tokens cifrados), y que no hay backend propio ni terceros involucrados.
 8. En la sección **Products**, añade **Login Kit**.
 9. Dentro de la configuración de Login Kit:
    - **Scopes**: activa `user.info.basic` y `video.list`.
@@ -44,11 +44,11 @@ TikTok exige, antes de poder añadir productos, una **Terms of Service URL** y u
 
 | Página | Ruta en el repo | URL pública |
 |---|---|---|
-| Redirect de OAuth | [docs/callback/index.html](/c:/Users/owner/Development/TokVision/docs/callback/index.html) | `https://vampirekun.github.io/TokVision/callback/` |
-| Términos de Servicio | [docs/legal/terms.html](/c:/Users/owner/Development/TokVision/docs/legal/terms.html) | `https://vampirekun.github.io/TokVision/legal/terms.html` |
-| Política de Privacidad | [docs/legal/privacy.html](/c:/Users/owner/Development/TokVision/docs/legal/privacy.html) | `https://vampirekun.github.io/TokVision/legal/privacy.html` |
+| Redirect de OAuth | [docs/callback/index.html](docs/callback/index.html) | `https://vampirekun.github.io/TokVision/callback/` |
+| Términos de Servicio | [docs/legal/terms.html](docs/legal/terms.html) | `https://vampirekun.github.io/TokVision/legal/terms.html` |
+| Política de Privacidad | [docs/legal/privacy.html](docs/legal/privacy.html) | `https://vampirekun.github.io/TokVision/legal/privacy.html` |
 
-TokVision nunca depende de que la página de redirect *haga* nada — solo necesita existir para que TikTok la acepte al registrar la app; la lógica real ocurre dentro del WebView de la app, que intercepta esa URL antes de que termine de cargar (ver [LoginScreen.kt](/c:/Users/owner/Development/TokVision/app/src/main/java/com/tokvison/app/ui/login/LoginScreen.kt)). Las páginas de Términos/Privacidad sí son leídas por TikKok y potencialmente por los usuarios, y describen honestamente qué hace TokVision.
+TokVision nunca depende de que la página de redirect *haga* nada — solo necesita existir para que TikTok la acepte al registrar la app; la lógica real ocurre dentro del WebView de la app, que intercepta esa URL antes de que termine de cargar (ver [LoginScreen.kt](app/src/main/java/com/tokvison/app/ui/login/LoginScreen.kt)). Las páginas de Términos/Privacidad sí son leídas por TikKok y potencialmente por los usuarios, y describen honestamente qué hace TokVision.
 
 Si alguna vez mueves el proyecto a otro repositorio/organización, repite el mismo esquema (`/docs/callback`, `/docs/legal`) y actualiza las tres URLs en TikTok y en `secrets.properties`.
 
