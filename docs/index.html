@@ -1,71 +1,130 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>TokVision — Cliente ligero de TikTok para Android TV</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0d0d0d">
+  <meta name="description" content="TokVision: estado real, guía de QA, privacidad y limitaciones del cliente independiente para Android TV y Google TV.">
+  <title>TokVision — Android TV / Google TV</title>
   <style>
-    body {
-      background: #0d0d0d;
-      color: #f5f5f5;
-      font-family: -apple-system, Segoe UI, Roboto, sans-serif;
-      max-width: 720px;
-      margin: 0 auto;
-      padding: 48px 24px 64px;
-      line-height: 1.6;
+    :root {
+      color-scheme: dark;
+      --bg: #0d0d0d;
+      --panel: #171717;
+      --text: #f5f5f5;
+      --muted: #b8b8b8;
+      --accent: #3ddc97;
+      --border: #383838;
+      --warning: #ffd166;
     }
-    h1 { color: #3ddc97; }
-    h2 { color: #3ddc97; margin-top: 32px; }
-    a { color: #3ddc97; }
+    * { box-sizing: border-box; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 40px 22px 64px;
+      line-height: 1.65;
+    }
+    h1 { margin: 12px 0; font-size: clamp(2.2rem, 8vw, 3.5rem); line-height: 1.1; }
+    h2 { color: var(--accent); margin-top: 34px; }
+    p, li { color: var(--muted); }
+    strong { color: var(--text); }
+    a { color: var(--accent); text-underline-offset: 3px; }
+    .badges { display: flex; flex-wrap: wrap; gap: 8px; }
     .badge {
       display: inline-block;
-      border: 1px solid #3ddc97;
-      border-radius: 4px;
-      padding: 2px 8px;
-      font-size: 0.85em;
-      margin-right: 8px;
+      border: 1px solid var(--accent);
+      border-radius: 999px;
+      padding: 3px 10px;
+      color: var(--accent);
+      font-size: .82rem;
+      font-weight: 700;
     }
-    ul { padding-left: 20px; }
-    footer { margin-top: 48px; font-size: 0.85em; color: #a6a6a6; }
+    .notice {
+      margin: 24px 0;
+      padding: 16px 18px;
+      border: 1px solid #69572b;
+      border-left: 4px solid var(--warning);
+      border-radius: 10px;
+      background: var(--panel);
+    }
+    .notice p { margin: 6px 0 0; }
+    ul { padding-left: 22px; }
+    li { margin: 7px 0; }
+    .links {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 10px;
+      margin-top: 16px;
+    }
+    .links a {
+      display: block;
+      padding: 13px 15px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      background: var(--panel);
+      text-decoration: none;
+    }
+    .links a:hover { border-color: var(--accent); }
+    footer {
+      margin-top: 46px;
+      padding-top: 18px;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: .88rem;
+    }
   </style>
 </head>
 <body>
-  <span class="badge">Android TV</span>
-  <span class="badge">Google TV</span>
-  <span class="badge">Código abierto</span>
+  <div class="badges">
+    <span class="badge">Android TV</span>
+    <span class="badge">Google TV</span>
+    <span class="badge">D-pad</span>
+    <span class="badge">Código abierto</span>
+    <span class="badge">Pre-release</span>
+  </div>
+
   <h1>TokVision</h1>
-  <p>
-    TokVision es un cliente ligero y no oficial de TikTok, diseñado específicamente
-    para <strong>Android TV y Google TV</strong>, controlado por completo con el mando a
-    distancia (D-pad).
-  </p>
+  <p>Cliente independiente y ligero para Android TV y Google TV. Su interfaz está diseñada para navegar con el control remoto; utiliza el flujo oficial OAuth de TikTok for Developers para la autenticación.</p>
 
-  <h2>¿Qué hace?</h2>
+  <div class="notice">
+    <strong>Estado de desarrollo — 9 de noviembre de 2026</strong>
+    <p>El código de OAuth Login/Logout existe, pero TokVision todavía no está listo para distribución pública. El intercambio de tokens de la implementación de desarrollo incorpora el client secret en el APK. No distribuyas builds que contengan un secreto real. Antes de habilitar login para usuarios finales se requiere un backend/token broker HTTPS; ese servicio aún no existe.</p>
+  </div>
+
+  <h2>Qué está implementado</h2>
   <ul>
-    <li>Inicia sesión con tu propia cuenta de TikTok mediante el flujo oficial OAuth de TikTok for Developers.</li>
-    <li>Muestra tu perfil y los vídeos que tú mismo has publicado, usando la Display API oficial de TikTok.</li>
-    <li>Reproduce vídeo de forma fluida y eficiente, optimizado para hardware de TV.</li>
-    <li>Guarda favoritos e historial localmente en tu dispositivo.</li>
+    <li>Interfaz para Android TV / Google TV con navegación D-pad.</li>
+    <li>Flujo de autenticación OAuth 2.0 + PKCE mediante WebView.</li>
+    <li>Inicio y cierre de sesión en el alcance de desarrollo.</li>
+    <li>Almacenamiento local cifrado de tokens e identificador de cuenta.</li>
   </ul>
 
-  <h2>¿Qué NO hace?</h2>
-  <p>
-    No muestra un feed algorítmico de otros usuarios, no permite buscar contenido de
-    terceros, ni dar like/comentar/seguir cuentas ajenas — esas funciones no están
-    disponibles a través de las APIs públicas de TikTok. Ver el detalle completo en el
-    repositorio.
-  </p>
-
-  <h2>Enlaces</h2>
+  <h2>Qué todavía no está disponible</h2>
   <ul>
-    <li><a href="https://github.com/vampirekun/TokVision" target="_blank" rel="noopener">Código fuente en GitHub</a></li>
-    <li><a href="./legal/terms.html">Términos de Servicio</a></li>
-    <li><a href="./legal/privacy.html">Política de Privacidad</a></li>
+    <li>Perfil propio y consulta de vídeos mediante Display API.</li>
+    <li>Reproducción de vídeos.</li>
+    <li>Favoritos e historial.</li>
+    <li>Feed For You/Following, búsqueda, likes, comentarios o follows de terceros.</li>
   </ul>
+  <p>TokVision no utiliza scraping ni endpoints privados para simular funciones que las APIs públicas no ofrecen.</p>
+
+  <h2>Instalación y uso</h2>
+  <p>La guía de usuario contiene requisitos, instalación de QA desde el código fuente, primer login, CAPTCHA, solución de problemas, privacidad y política de versiones.</p>
+  <div class="links">
+    <a href="./guide/">Guía de usuario e instalación de QA</a>
+    <a href="https://github.com/vampirekun/TokVision/blob/main/KNOWN_LIMITATIONS.md">Limitaciones conocidas</a>
+    <a href="https://github.com/vampirekun/TokVision/blob/main/BUILD.md">Compilar y configurar desarrollo</a>
+    <a href="./legal/privacy.html">Política de Privacidad</a>
+    <a href="./legal/terms.html">Términos de Servicio</a>
+    <a href="https://github.com/vampirekun/TokVision/issues">Reportar un problema</a>
+    <a href="https://github.com/vampirekun/TokVision">Código fuente en GitHub</a>
+  </div>
 
   <footer>
-    TokVision no es un producto oficial de TikTok ni está afiliado, patrocinado o
-    respaldado por TikTok Inc./ByteDance.
+    TokVision no es un producto oficial de TikTok ni está afiliado, patrocinado o respaldado por TikTok Inc./ByteDance. Las funciones futuras no deben interpretarse como disponibles hasta que estén implementadas y verificadas.
   </footer>
 </body>
 </html>
