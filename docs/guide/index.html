@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0d0d0d">
+  <meta name="description" content="Guía de uso, instalación de QA, limitaciones y seguridad de TokVision para Android TV y Google TV.">
+  <title>TokVision — Guía de usuario</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0d0d0d;
+      --panel: #171717;
+      --panel-soft: #1d1d1d;
+      --text: #f5f5f5;
+      --muted: #b8b8b8;
+      --accent: #3ddc97;
+      --border: #383838;
+      --warning: #ffd166;
+      --danger: #ff8a8a;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+    }
+    header, main, footer {
+      width: min(100% - 32px, 900px);
+      margin-inline: auto;
+    }
+    header { padding: 48px 0 24px; }
+    .eyebrow {
+      color: var(--accent);
+      font-size: .8rem;
+      font-weight: 800;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    h1 { margin: 8px 0; font-size: clamp(2rem, 7vw, 3.4rem); line-height: 1.08; }
+    h2 { margin-top: 44px; padding-bottom: 8px; border-bottom: 1px solid var(--border); font-size: 1.55rem; }
+    h3 { margin-top: 26px; font-size: 1.08rem; }
+    p, li { color: var(--muted); }
+    strong { color: var(--text); }
+    a { color: var(--accent); text-underline-offset: 3px; }
+    a:hover { text-decoration-thickness: 2px; }
+    code, kbd {
+      color: #d6ffe9;
+      background: #202a25;
+      border: 1px solid #31483b;
+      border-radius: 5px;
+      padding: 2px 6px;
+      overflow-wrap: anywhere;
+    }
+    pre {
+      overflow-x: auto;
+      padding: 16px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: #090909;
+      color: #e6e6e6;
+      line-height: 1.5;
+    }
+    pre code { padding: 0; border: 0; background: transparent; color: inherit; }
+    .lead { max-width: 760px; font-size: 1.12rem; }
+    .notice, .warning, .danger, .card {
+      margin: 20px 0;
+      padding: 16px 18px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--panel);
+    }
+    .notice { border-left: 4px solid var(--accent); }
+    .warning { border-left: 4px solid var(--warning); }
+    .danger { border-left: 4px solid var(--danger); }
+    .notice p, .warning p, .danger p { margin: 6px 0; }
+    nav {
+      margin: 22px 0 30px;
+      padding: 18px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--panel);
+    }
+    nav ul {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 8px 18px;
+      margin: 12px 0 0;
+      padding-left: 20px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+    }
+    .card { margin: 0; }
+    .card h3 { margin: 0 0 6px; }
+    .card p { margin: 0; }
+    .status {
+      display: inline-block;
+      margin: 3px 5px 3px 0;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: .78rem;
+      font-weight: 800;
+      background: #26372e;
+      color: #a8f3c8;
+    }
+    .status.pending { background: #3b3320; color: #ffe09a; }
+    .status.blocked { background: #3c2525; color: #ffb3b3; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid var(--border); padding: 10px 12px; text-align: left; vertical-align: top; }
+    th { background: var(--panel-soft); color: var(--text); }
+    td { color: var(--muted); }
+    .small { font-size: .9rem; }
+    footer { margin-top: 52px; padding: 24px 0 48px; border-top: 1px solid var(--border); }
+    @media (max-width: 600px) {
+      header { padding-top: 32px; }
+      table { display: block; overflow-x: auto; }
+      nav ul { grid-template-columns: 1fr; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="eyebrow">Android TV · Google TV</div>
+    <h1>TokVision</h1>
+    <p class="lead">Guía de instalación de QA, primer inicio de sesión, solución de problemas, privacidad y alcance real del cliente de TikTok para televisión.</p>
+    <p class="small">Estado documentado: 9 de noviembre de 2026 · Código base revisado: <code>0.2.0-auth</code></p>
+    <div class="warning">
+      <strong>Pre-release: no es una versión pública lista para distribuir.</strong>
+      <p>El canal oficial de distribución y la arquitectura segura de autenticación todavía están pendientes. No instales APKs de fuentes no verificadas ni compartas builds de desarrollo.</p>
+    </div>
+  </header>
+
+  <main>
+    <nav aria-label="Contenido de la guía">
+      <strong>En esta guía</strong>
+      <ul>
+        <li><a href="#estado">Estado y alcance</a></li>
+        <li><a href="#requisitos">Requisitos y dispositivos</a></li>
+        <li><a href="#instalacion">Instalación de QA</a></li>
+        <li><a href="#primer-login">Primer inicio de sesión</a></li>
+        <li><a href="#captcha">CAPTCHA y control remoto</a></li>
+        <li><a href="#problemas">Solución de problemas</a></li>
+        <li><a href="#privacidad">Privacidad y seguridad</a></li>
+        <li><a href="#versiones">Versiones y distribución</a></li>
+        <li><a href="#faq">Preguntas frecuentes</a></li>
+      </ul>
+    </nav>
+
+    <section id="estado">
+      <h2>1. Estado y alcance real</h2>
+      <p>TokVision es un cliente ligero para Android TV y Google TV, diseñado para navegación con D-pad. No es una aplicación oficial de TikTok ni está afiliada, patrocinada o respaldada por TikTok o ByteDance.</p>
+      <div class="grid">
+        <article class="card">
+          <h3><span class="status">Implementado en código</span></h3>
+          <p>Inicio y cierre de sesión OAuth 2.0 + PKCE mediante WebView, más almacenamiento local cifrado de la sesión.</p>
+        </article>
+        <article class="card">
+          <h3><span class="status pending">Pendiente</span></h3>
+          <p>Backend/token broker HTTPS para mantener el client secret y los refresh tokens fuera del APK. Sin él, el login no debe habilitarse para distribución pública.</p>
+        </article>
+        <article class="card">
+          <h3><span class="status pending">No implementado</span></h3>
+          <p>Display API, perfil, vídeos propios, reproducción, favoritos e historial.</p>
+        </article>
+      </div>
+      <h3>Funciones que no están disponibles</h3>
+      <ul>
+        <li>Feeds “For You” o “Following”.</li>
+        <li>Búsqueda de usuarios, vídeos o hashtags.</li>
+        <li>Reproducción de vídeos de terceros.</li>
+        <li>Likes, comentarios o follows sobre contenido ajeno.</li>
+        <li>Favoritos e historial local.</li>
+      </ul>
+      <p>Estas limitaciones son deliberadas: TokVision no utiliza scraping, endpoints privados ni ingeniería inversa para simular funciones que las APIs públicas de TikTok no ofrecen.</p>
+      <p>Consulta <a href="https://github.com/vampirekun/TokVision/blob/main/KNOWN_LIMITATIONS.md">las limitaciones conocidas en el repositorio</a> para el detalle técnico.</p>
+    </section>
+
+    <section id="requisitos">
+      <h2>2. Requisitos y dispositivos</h2>
+      <ul>
+        <li><strong>Plataforma objetivo:</strong> Android TV o Google TV.</li>
+        <li><strong>Android mínimo declarado:</strong> Android 6.0 (API 23).</li>
+        <li><strong>Entrada:</strong> control remoto con D-pad; un mouse USB/Bluetooth puede ser necesario si TikTok presenta un CAPTCHA de arrastre.</li>
+        <li><strong>Conectividad:</strong> internet durante el inicio de sesión y las solicitudes OAuth.</li>
+        <li><strong>Orientación:</strong> paisaje (landscape).</li>
+      </ul>
+      <p>La aplicación declara el launcher de Android TV y no exige pantalla táctil. Eso no garantiza compatibilidad con todos los televisores, mandos, versiones modificadas de Android o fabricantes. La aceptación en cada dispositivo debe probarse físicamente.</p>
+      <div class="notice">
+        <strong>La aplicación está diseñada para TV.</strong>
+        <p>No se ofrece compatibilidad oficial con teléfonos o tablets Android, aunque algunos dispositivos puedan permitir instalar el APK.</p>
+      </div>
+    </section>
+
+    <section id="instalacion">
+      <h2>3. Instalación de QA desde el código fuente</h2>
+      <p><strong>No hay un canal estable de APK público confirmado.</strong> Esta sección describe un procedimiento de desarrollo/QA, no una instalación de producción para usuarios finales. Usa únicamente código y artefactos verificables del repositorio.</p>
+      <h3>Herramientas de desarrollo</h3>
+      <ul>
+        <li>JDK 17.</li>
+        <li>Android SDK y herramientas de plataforma (ADB).</li>
+        <li>Windows PowerShell para los comandos de ejemplo siguientes; adapta las rutas si usas otro sistema operativo.</li>
+      </ul>
+      <h3>Compilar un APK de depuración</h3>
+      <pre><code>git clone https://github.com/vampirekun/TokVision.git
+cd TokVision
+.\gradlew.bat assembleDebug</code></pre>
+      <p>El APK de depuración se genera en <code>app\build\outputs\apk\debug\app-debug.apk</code>. El proyecto puede compilar sin credenciales de TikTok; eso no significa que el login vaya a completar el intercambio OAuth.</p>
+      <h3>Instalar en la TV mediante ADB</h3>
+      <ol>
+        <li>En la TV, abre <strong>Ajustes → Preferencias del dispositivo → Acerca de</strong> y pulsa siete veces sobre “Compilación” para habilitar Opciones de desarrollador. Los nombres pueden variar según el fabricante.</li>
+        <li>En Opciones de desarrollador, habilita la depuración USB o de red.</li>
+        <li>Obtén la IP local de la TV y conéctate desde el PC:</li>
+      </ol>
+      <pre><code>adb connect &lt;IP_DE_LA_TV&gt;:5555
+adb install -r app\build\outputs\apk\debug\app-debug.apk</code></pre>
+      <p>Autoriza la conexión en la pantalla de la TV si Android lo solicita. Abre TokVision desde la fila de aplicaciones del launcher.</p>
+      <div class="danger">
+        <strong>No compartas el APK de depuración.</strong>
+        <p>Los valores incorporados en un APK pueden extraerse. Nunca empaquetes ni distribuyas un client secret real. La protección de release está en revisión y el backend/token broker todavía no existe.</p>
+      </div>
+    </section>
+
+    <section id="primer-login">
+      <h2>4. Primer inicio de sesión</h2>
+      <ol>
+        <li>Abre <strong>Ajustes → Cuenta → Iniciar sesión</strong>.</li>
+        <li>TokVision abre la página oficial de autorización de TikTok dentro de un WebView.</li>
+        <li>Introduce tus credenciales directamente en la página de TikTok. TokVision no necesita ni almacena tu contraseña.</li>
+        <li>Completa el método de verificación que TikTok solicite, por ejemplo código SMS o autenticador, si corresponde.</li>
+        <li>Si TikTok muestra un CAPTCHA, resuélvelo manualmente. Consulta la sección siguiente.</li>
+        <li>Al completar el consentimiento, TikTok devuelve el flujo OAuth a la aplicación.</li>
+      </ol>
+      <p>La aplicación solicita actualmente el scope <code>user.info.basic</code> para el flujo de identidad. No consulta todavía la Display API ni obtiene perfil o vídeos. La presencia de una sesión autenticada no significa que esas pantallas estén implementadas.</p>
+      <p>Para pruebas de desarrollo, la aplicación de TikTok debe estar configurada correctamente en TikTok for Developers y la cuenta debe cumplir las restricciones del entorno Sandbox o del proceso de revisión que corresponda. La URI de redirección debe coincidir exactamente con la registrada.</p>
+      <p>La configuración de desarrollador y los requisitos de TikTok pueden cambiar durante el pre-release. Para pruebas, utiliza únicamente credenciales Sandbox dedicadas y nunca compartas secretos ni APKs que los incorporen.</p>
+    </section>
+
+    <section id="captcha">
+      <h2>5. CAPTCHA y control remoto</h2>
+      <p>TikTok puede mostrar un CAPTCHA de arrastre. Un D-pad normalmente no produce el gesto continuo que exige ese control.</p>
+      <ul>
+        <li>Si aparece, conecta temporalmente un mouse USB o Bluetooth y resuelve el desafío tú mismo.</li>
+        <li>Si no puedes completarlo, cancela y vuelve a intentarlo más tarde, sin repetir intentos de forma compulsiva.</li>
+        <li>No automatices el CAPTCHA con JavaScript, macros o movimientos sintéticos.</li>
+        <li>Evita mantener la depuración remota de WebView activa durante un inicio de sesión real; puede interferir con las señales de confianza que evalúa TikTok.</li>
+      </ul>
+      <div class="warning">
+        <strong>El CAPTCHA no es un defecto que TokVision deba esquivar.</strong>
+        <p>La aplicación no debe resolverlo por el usuario ni intentar ocultar el comportamiento de automatización. Si persiste, detén los reintentos y utiliza los canales de soporte de TikTok.</p>
+      </div>
+    </section>
+
+    <section id="problemas">
+      <h2>6. Solución de problemas</h2>
+      <table>
+        <thead><tr><th>Síntoma</th><th>Qué revisar</th></tr></thead>
+        <tbody>
+          <tr><td><code>invalid_client</code> o error inmediato de OAuth</td><td>Verifica que la app de TikTok esté configurada, que el client key corresponda al entorno y que la redirect URI coincida exactamente. Un build sin credenciales válidas no puede completar el intercambio.</td></tr>
+          <tr><td>La cuenta no puede entrar en Sandbox</td><td>Comprueba que el usuario esté añadido como tester y que la app/entorno tengan el estado correcto en TikTok for Developers.</td></tr>
+          <tr><td>El CAPTCHA pide arrastrar una pieza</td><td>Usa un mouse USB/Bluetooth. No intentes resolverlo con automatización ni depuración remota.</td></tr>
+          <tr><td>TokVision no aparece en el launcher</td><td>Confirma que el dispositivo sea Android TV/Google TV y que la instalación ADB haya terminado correctamente. La app declara la categoría <code>LEANBACK_LAUNCHER</code>.</td></tr>
+          <tr><td>El login termina, pero no aparecen vídeos o perfil</td><td>Es el alcance actual: Display API, perfil y vídeos propios todavía no están implementados.</td></tr>
+          <tr><td>Después de cerrar sesión TikTok vuelve a reconocer la cuenta</td><td>El cierre de sesión elimina la sesión local de TokVision, pero las cookies del WebView pueden persistir. Para revocar el permiso, hazlo desde la cuenta de TikTok; para borrar cookies locales, limpia los datos de la app en Android.</td></tr>
+          <tr><td>El APK no se instala</td><td>Comprueba la versión de Android, la arquitectura del dispositivo, el espacio disponible y que el archivo no esté incompleto. No desactives verificaciones de seguridad para forzar la instalación.</td></tr>
+        </tbody>
+      </table>
+      <p>Si el problema continúa, abre un reporte en <a href="https://github.com/vampirekun/TokVision/issues">GitHub Issues</a>. Incluye modelo de TV, versión de Android, versión/build de TokVision y pasos para reproducirlo. <strong>No adjuntes contraseñas, tokens, cookies, client secrets ni capturas que los muestren.</strong></p>
+    </section>
+
+    <section id="privacidad">
+      <h2>7. Privacidad y seguridad</h2>
+      <ul>
+        <li>La contraseña se introduce en la página oficial de TikTok; TokVision no la almacena.</li>
+        <li>Los tokens OAuth y el identificador de cuenta se guardan localmente mediante almacenamiento cifrado respaldado por Android Keystore.</li>
+        <li>El estado PKCE se mantiene en memoria durante el intento de autenticación.</li>
+        <li>El manifiesto desactiva el backup de datos de la aplicación.</li>
+        <li>TokVision no tiene actualmente un backend propio ni una base de datos remota de usuarios.</li>
+        <li>Las cookies y el almacenamiento web de TikTok pueden persistir en el WebView después del logout.</li>
+      </ul>
+      <h3>Cerrar sesión no equivale a revocar el permiso</h3>
+      <p>Usa <strong>Ajustes → Cuenta → Cerrar sesión</strong> para eliminar la sesión local de TokVision. Para revocar el acceso concedido a la aplicación, entra a la configuración de seguridad de tu cuenta de TikTok y elimina TokVision de las aplicaciones conectadas. Para borrar también los datos locales del WebView, limpia los datos de TokVision desde los ajustes de Android.</p>
+      <h3>Bloqueo de distribución</h3>
+      <p>La implementación de desarrollo actual realiza el intercambio OAuth desde Android e incorpora el client secret en el APK. Un secreto empaquetado en una aplicación cliente puede extraerse; PKCE no cambia ese hecho. No distribuyas APKs que contengan un client secret real. Antes de habilitar login para usuarios finales se requiere un backend/token broker HTTPS que realice el intercambio y mantenga el client secret y los refresh tokens del lado servidor. Ese servicio todavía no está implementado.</p>
+      <p>Lee la <a href="../legal/privacy.html">Política de Privacidad</a> y los <a href="../legal/terms.html">Términos de Servicio</a> para el detalle legal y de tratamiento de datos.</p>
+    </section>
+
+    <section id="versiones">
+      <h2>8. Versiones y distribución</h2>
+      <p>La versión documentada corresponde a <code>0.2.0-auth</code> y es un estado de desarrollo, no una promesa de compatibilidad o soporte estable.</p>
+      <ul>
+        <li>No hay todavía una versión estable aprobada para distribución pública.</li>
+        <li>El canal oficial de distribución debe anunciarse junto con el proceso de firma y verificación de artefactos.</li>
+        <li>No instales APKs republicados por terceros ni builds cuya procedencia y checksum no puedas verificar.</li>
+        <li>Una compilación exitosa o un APK generado por CI no significa que el login real, la revisión de TikTok, la firma o la distribución estén aprobados.</li>
+      </ul>
+      <p>Cuando exista un release público, utiliza únicamente el artefacto y las instrucciones publicados desde el <a href="https://github.com/vampirekun/TokVision">repositorio oficial</a>, junto con sus notas de versión y checksum.</p>
+    </section>
+
+    <section id="faq">
+      <h2>9. Preguntas frecuentes</h2>
+      <h3>¿TokVision es una aplicación oficial de TikTok?</h3>
+      <p>No. Es un proyecto independiente que utiliza el flujo oficial de autenticación de TikTok for Developers.</p>
+      <h3>¿Puedo ver el feed For You o Following?</h3>
+      <p>No. Las APIs públicas de consumo general no ofrecen esos feeds a TokVision. El proyecto no utiliza scraping ni endpoints privados.</p>
+      <h3>¿Puedo ver los vídeos de mi propia cuenta?</h3>
+      <p>Todavía no. La integración de Display API y la consulta de vídeos propios están pendientes.</p>
+      <h3>¿Necesito tener instalada la aplicación móvil de TikTok?</h3>
+      <p>No para el flujo WebView descrito aquí. La autorización se abre en la propia TV mediante el navegador integrado de Android.</p>
+      <h3>¿Puedo usar mi cuenta principal?</h3>
+      <p>TokVision sigue en pre-release y el flujo de intercambio OAuth no tiene aún el backend requerido para una distribución pública segura. Limita las pruebas a cuentas y entornos de desarrollo apropiados; no introduzcas credenciales en APKs de procedencia dudosa.</p>
+      <h3>¿Cuándo estará disponible la versión pública?</h3>
+      <p>No hay una fecha de lanzamiento confirmada. Primero deben completarse el token broker, la revisión de seguridad, la aceptación en dispositivos reales y la estrategia de distribución.</p>
+    </section>
+  </main>
+
+  <footer>
+    <p class="small">TokVision es un proyecto independiente. TikTok y sus marcas pertenecen a sus respectivos titulares.</p>
+    <p class="small"><a href="https://github.com/vampirekun/TokVision">Repositorio</a> · <a href="https://github.com/vampirekun/TokVision/issues">Reportar un problema</a> · <a href="../legal/privacy.html">Privacidad</a> · <a href="../legal/terms.html">Términos</a></p>
+  </footer>
+</body>
+</html>
