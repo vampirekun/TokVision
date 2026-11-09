@@ -1,6 +1,10 @@
 package com.tokvison.app.ui.login
 
+import android.net.http.SslError
+import android.os.Build
+import android.webkit.SslErrorHandler
 import android.webkit.WebResourceRequest
+import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.activity.compose.BackHandler
@@ -39,8 +43,20 @@ import com.tokvison.app.core.auth.AuthState
 @Composable
 fun LoginScreen(viewModel: LoginViewModel, onFinished: () -> Unit) {
     val authState by viewModel.authState.collectAsState()
+    val pendingLogin = viewModel.pendingLogin
     var isPageLoading by remember { mutableStateOf(true) }
     var webViewRef by remember { mutableStateOf<WebView?>(null) }
+
+    // viewModel() is Activity-scoped in the current root composition. The overlay can be
+    // removed and shown again while the same ViewModel survives, so every entry needs a
+    // new PKCE verifier/state pair rather than reusing the previous attempt.
+    LaunchedEffect(viewModel) {
+        viewModel.startLogin()
+    }
+
+    LaunchedEffect(pendingLogin) {
+        if (pendingLogin != null) isPageLoading = true
+    }
 
     BackHandler {
         val webView = webViewRef
@@ -61,41 +77,87 @@ fun LoginScreen(viewModel: LoginViewModel, onFinished: () -> Unit) {
     Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         val error = (authState as? AuthState.Error)?.message
         if (error != null) {
-            LoginErrorContent(message = error, onRetry = onFinished)
-        } else {
-            AndroidView(
-                modifier = Modifier.fillMaxSize(),
-                factory = { context ->
-                    WebView(context).apply {
-                        isFocusable = true
-                        isFocusableInTouchMode = true
-                        settings.javaScriptEnabled = true
-                        settings.domStorageEnabled = true
-                        webViewClient = object : WebViewClient() {
-                            @Deprecated("Deprecated in Java", ReplaceWith(""))
-                            @Suppress("OVERRIDE_DEPRECATION", "DEPRECATION")
-                            override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
-                                return url != null && viewModel.tryHandleRedirect(url)
-                            }
-
-                            override fun shouldOverrideUrlLoading(
-                                view: WebView,
-                                request: WebResourceRequest,
-                            ): Boolean = viewModel.tryHandleRedirect(request.url.toString())
-
-                            override fun onPageFinished(view: WebView?, url: String?) {
-                                isPageLoading = false
-                                view?.evaluateJavascript(dPadSpatialNavigationScript, null)
-                            }
-                        }
-                        webViewRef = this
-                        loadUrl(viewModel.pendingLogin.authorizationUrl)
-                        requestFocus()
+            val canRetry = viewModel.canRetry()
+            LoginErrorContent(
+                message = error,
+                buttonLabel = if (canRetry) "Reintentar" else "Volver",
+                onRetry = {
+                    if (canRetry) {
+                        viewModel.retry()
+                    } else {
+                        viewModel.cancel()
+                        onFinished()
                     }
                 },
             )
-            if (isPageLoading) {
+        } else {
+            val loginRequest = pendingLogin
+            if (loginRequest == null) {
                 LoginLoadingContent()
+            } else {
+                AndroidView(
+                    modifier = Modifier.fillMaxSize(),
+                    factory = { context ->
+                        WebView(context).apply {
+                            isFocusable = true
+                            isFocusableInTouchMode = true
+                            // TikTok's authorization page requires JavaScript and DOM storage.
+                            settings.javaScriptEnabled = true
+                            settings.domStorageEnabled = true
+
+                            // This remote OAuth WebView has no reason to read local files/content
+                            // or load insecure subresources, open script-created windows, or popups.
+                            settings.allowFileAccess = false
+                            settings.allowContentAccess = false
+                            settings.mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
+                            settings.javaScriptCanOpenWindowsAutomatically = false
+                            settings.setSupportMultipleWindows(false)
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                settings.safeBrowsingEnabled = true
+                            }
+
+                            webViewClient = object : WebViewClient() {
+                                @Deprecated("Deprecated in Java", ReplaceWith(""))
+                                @Suppress("OVERRIDE_DEPRECATION", "DEPRECATION")
+                                override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
+                                    return url == null || viewModel.shouldOverrideNavigation(url)
+                                }
+
+                                override fun shouldOverrideUrlLoading(
+                                    view: WebView,
+                                    request: WebResourceRequest,
+                                ): Boolean = viewModel.shouldOverrideNavigation(request.url.toString())
+
+                                override fun onReceivedSslError(
+                                    view: WebView?,
+                                    handler: SslErrorHandler?,
+                                    error: SslError?,
+                                ) {
+                                    // Never let a certificate error turn into an OAuth credential prompt.
+                                    handler?.cancel()
+                                }
+
+                                override fun onPageFinished(view: WebView?, url: String?) {
+                                    isPageLoading = false
+                                    view?.evaluateJavascript(dPadSpatialNavigationScript, null)
+                                }
+                            }
+                            webViewRef = this
+                            loadUrl(loginRequest.authorizationUrl)
+                            requestFocus()
+                        }
+                    },
+                    onRelease = { released ->
+                        if (webViewRef === released) webViewRef = null
+                        released.stopLoading()
+                        released.webChromeClient = null
+                        released.webViewClient = WebViewClient()
+                        released.destroy()
+                    },
+                )
+                if (isPageLoading) {
+                    LoginLoadingContent()
+                }
             }
         }
     }
@@ -198,39 +260,70 @@ private const val dPadSpatialNavigationScript = """
     }
   }
 
+  function isTextEntry(el) {
+    if (!el) return false;
+    if (el.isContentEditable) return true;
+    var tag = el.tagName;
+    if (tag === 'TEXTAREA' || tag === 'SELECT') return true;
+    if (tag === 'INPUT') {
+      var type = (el.getAttribute('type') || 'text').toLowerCase();
+      return ['button', 'checkbox', 'radio', 'submit', 'reset', 'file', 'image', 'hidden'].indexOf(type) === -1;
+    }
+    var role = el.getAttribute('role');
+    return role === 'textbox' || role === 'searchbox';
+  }
+
   document.addEventListener('keydown', function(e) {
+    var active = document.activeElement;
+    // Let the native caret/selection behavior handle D-pad arrows while editing text
+    // or choosing a native select option. Spatial navigation is for non-editable controls.
+    if (isTextEntry(active) &&
+        ['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight'].indexOf(e.key) !== -1) {
+      return;
+    }
     if (e.key === 'ArrowDown') { moveFocus('down'); e.preventDefault(); }
     else if (e.key === 'ArrowUp') { moveFocus('up'); e.preventDefault(); }
     else if (e.key === 'ArrowLeft') { moveFocus('left'); e.preventDefault(); }
     else if (e.key === 'ArrowRight') { moveFocus('right'); e.preventDefault(); }
     else if (e.key === 'Enter') {
-      var active = document.activeElement;
       if (!active) return;
       var tag = active.tagName;
       var type = (active.getAttribute('type') || '').toLowerCase();
-      var isTextEntry = tag === 'TEXTAREA' ||
-        (tag === 'INPUT' && ['text', 'tel', 'email', 'password', 'search', 'number', 'url'].indexOf(type) !== -1);
       var isNativelyClickable = tag === 'A' || tag === 'BUTTON' ||
         (tag === 'INPUT' && (type === 'submit' || type === 'button' || type === 'checkbox' || type === 'radio'));
       // Skip synthetic click while typing (Enter in a text field shouldn't "click" it);
       // native <a>/<button>/<input> already get a click from the browser on Enter, so
       // this only covers ARIA-role custom elements (tabs, custom buttons, etc.).
-      if (!isTextEntry && !isNativelyClickable) {
+      if (!isTextEntry(active) && !isNativelyClickable) {
         active.click();
       }
     }
   }, true);
 
-  // WebView/Chromium + React controlled inputs sometimes fail to move the caret to the
-  // end after each keystroke coming from a D-pad/remote, so typed digits appear to
-  // insert in reverse order. Force the caret to the end after every input event, once
-  // React's own re-render has settled.
+  // Some TV WebViews place the caret at the start after appending digits to a phone field.
+  // Preserve that narrow workaround only when the user was already at the end before input;
+  // edits made in the middle of the value must keep their native selection position.
+  var caretAtEndBeforeInput = new WeakMap();
+  document.addEventListener('beforeinput', function(e) {
+    var el = e.target;
+    if (el && el.tagName === 'INPUT' && (el.getAttribute('type') || 'text').toLowerCase() === 'tel') {
+      caretAtEndBeforeInput.set(
+        el,
+        el.selectionStart === el.value.length && el.selectionEnd === el.value.length,
+      );
+    }
+  }, true);
+
   document.addEventListener('input', function(e) {
     var el = e.target;
-    if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA')) {
-      setTimeout(function() {
-        try { el.setSelectionRange(el.value.length, el.value.length); } catch (err) {}
-      }, 0);
+    if (el && el.tagName === 'INPUT' && (el.getAttribute('type') || 'text').toLowerCase() === 'tel') {
+      var wasAtEnd = caretAtEndBeforeInput.get(el);
+      caretAtEndBeforeInput.delete(el);
+      if (wasAtEnd) {
+        setTimeout(function() {
+          try { el.setSelectionRange(el.value.length, el.value.length); } catch (err) {}
+        }, 0);
+      }
     }
   }, true);
 
@@ -251,7 +344,7 @@ private fun LoginLoadingContent() {
 }
 
 @Composable
-private fun LoginErrorContent(message: String, onRetry: () -> Unit) {
+private fun LoginErrorContent(message: String, buttonLabel: String, onRetry: () -> Unit) {
     Box(modifier = Modifier.fillMaxSize().padding(48.dp), contentAlignment = Alignment.Center) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -266,7 +359,7 @@ private fun LoginErrorContent(message: String, onRetry: () -> Unit) {
                     focusedContainerColor = MaterialTheme.colorScheme.primary,
                 ),
             ) {
-                Text(text = "Volver", modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp))
+                Text(text = buttonLabel, modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp))
             }
         }
     }
