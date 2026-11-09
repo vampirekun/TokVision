@@ -2,9 +2,15 @@ package com.tokvison.app.core.auth
 
 import android.content.Context
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.withContext
+
+internal fun interface WebViewSessionCleaner {
+    suspend fun clear()
+}
 
 sealed interface AuthState {
     data object LoggedOut : AuthState
@@ -29,8 +35,13 @@ class AuthRepository internal constructor(
     private val api: TikTokAuthClient,
     private val tokenStore: TokenStore,
     private val pendingLoginFactory: (() -> PendingLogin)? = null,
+    private val webViewSessionCleaner: WebViewSessionCleaner = WebViewSessionCleaner { },
 ) {
-    constructor(context: Context) : this(TikTokAuthApi(), SecureTokenStore(context))
+    constructor(context: Context) : this(
+        api = TikTokAuthApi(),
+        tokenStore = SecureTokenStore(context),
+        webViewSessionCleaner = AndroidWebViewSessionCleaner(),
+    )
     private val _state = MutableStateFlow<AuthState>(AuthState.LoggedOut)
     val state: StateFlow<AuthState> = _state.asStateFlow()
 
@@ -139,9 +150,33 @@ class AuthRepository internal constructor(
         }
     }
 
+    /**
+     * Revoke the local session first, then clear the embedded provider session even if
+     * encrypted-store invalidation fails. Cleanup is non-cancellable so a caller leaving
+     * the settings screen cannot abandon WebView cookie/storage removal halfway through.
+     */
     suspend fun logout() {
         _state.value = AuthState.LoggedOut
-        tokenStore.invalidate()
+        var failure: Throwable? = null
+
+        try {
+            tokenStore.invalidate()
+        } catch (tokenFailure: Throwable) {
+            failure = tokenFailure
+        }
+
+        try {
+            withContext(NonCancellable) { webViewSessionCleaner.clear() }
+        } catch (cleanupFailure: Throwable) {
+            val previousFailure = failure
+            if (previousFailure == null) {
+                failure = cleanupFailure
+            } else if (previousFailure !== cleanupFailure) {
+                previousFailure.addSuppressed(cleanupFailure)
+            }
+        }
+
+        failure?.let { throw it }
     }
 
     private fun applyTokenResponse(response: TikTokTokenResponse): Result<Unit> {
